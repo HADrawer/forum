@@ -9,6 +9,7 @@ import (
     "log"
 )
 
+
 var (
     db       *sql.DB
     loggedIn bool
