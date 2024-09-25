@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    {{define "content"}}
+    <h1>{{.Post.Title}}</h1>
+    <p>{{.Post.Content}}</p>
+    <p>Author: {{.Post.Author}}</p>
+    
+    <p>Likes: {{.Post.Likes}} | Dislikes: {{.Post.Dislikes}}</p>
+    
+    <a href="/like?post_id={{.Post.ID}}&like=1">Like</a>
+    <a href="/like?post_id={{.Post.ID}}&like=0">Dislike</a>
+    
+    <h2>Comments</h2>
+    {{if .Post.Comments}}
+        <ul>
+        {{range .Post.Comments}}
+            <li>{{.Author}}: {{.Content}}</li>
+        {{end}}
+        </ul>
+    {{else}}
+        <p>No comments yet.</p>
+    {{end}}
+    
+    {{if .IsLoggedIn}}
+    <h2>Add a Comment</h2>
+    <form action="/addComment" method="post">
+        <input type="hidden" name="post_id" value="{{.Post.ID}}">
+        <textarea name="comment" required></textarea><br>
+        <input type="submit" value="Add Comment">
+    </form>
+    {{end}}
+    
+    {{end}}
+    
+{{end}}
+
+</body>
+</html>

@@ -1,1149 +1,293 @@
 package main
 
 import (
-    "database/sql"
-    "net/http"
-    "github.com/gin-gonic/gin"
-    _ "github.com/mattn/go-sqlite3"
-    "golang.org/x/crypto/bcrypt"
-    "log"
+	"database/sql"
+	"html/template"
+	"log"
+	"net/http"
+	"time"
+
+	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
+	"github.com/google/uuid"
 )
 
+// Global variable to hold the database connection
+var db *sql.DB
 
-var (
-    db       *sql.DB
-    loggedIn bool
-    userID   int
-)
+// Template cache for better performance
+var templates *template.Template
 
-func main() {
-    var err error
-    db, err = sql.Open("sqlite3", "./webapp.db")
-    if err != nil {
-        panic(err)
-    }
-    defer db.Close()
+// In-memory session store (for simplicity)
+var sessions = map[string]string{} // session_id -> user_id
 
-    // Initialize the database schema
-    initializeDatabase()
-
-    r := gin.Default()
-
-    // Serve HTML files
-    r.LoadHTMLGlob("templates/*")
-
-    // Routes
-	r.GET("/register", showRegisterPage)
-    r.POST("/register", handleRegister)
-    r.GET("/login", showLoginPage)
-    r.POST("/login", handleLogin)
-    
-    r.GET("/logout", handleLogout)
-    r.GET("/", showHomePage)
-    r.GET("/categories", showCategories)
-    r.GET("/category/:id", showPostsInCategory)
-    r.POST("/post/:id/like", likePost)
-    r.POST("/post/:id/dislike", dislikePost)
-    r.POST("/post/:id/comment", commentOnPost)
-
-    r.Run(":8080")
+// User structure
+type User struct {
+	ID       int
+	Email    string
+	Username string
+	Password string
 }
 
-// Initialize the database schema
-func initializeDatabase() {
-    schema := `
+// Post structure
+type Post struct {
+	ID      int
+	Title   string
+	Content string
+	Author  string
+}
+
+// Comment structure
+type Comment struct {
+	ID      int
+	Content string
+	Author  string
+}
+
+// Initialize the database connection and create tables
+func initDB() {
+	var err error
+	db, err = sql.Open("sqlite3", "./forum.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Ping to test the connection
+	if err := db.Ping(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Create necessary tables
+	createTables()
+	log.Println("Database connected and tables created successfully")
+}
+
+// Create database tables
+func createTables() {
+	query := `
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
+        username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_id INTEGER,
-        title TEXT NOT NULL,
-        content TEXT,
-        FOREIGN KEY (category_id) REFERENCES categories(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS likes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
-        post_id INTEGER,
-        is_liked BOOLEAN,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (post_id) REFERENCES posts(id)
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS comments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         post_id INTEGER,
         user_id INTEGER,
-        content TEXT,
-        FOREIGN KEY (post_id) REFERENCES posts(id),
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        content TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(post_id) REFERENCES posts(id),
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS likes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER,
+        user_id INTEGER,
+        is_like INTEGER,
+        FOREIGN KEY(post_id) REFERENCES posts(id),
+        FOREIGN KEY(user_id) REFERENCES users(id)
     );
     `
-
-    _, err := db.Exec(schema)
-    if err != nil {
-        log.Fatalf("Error initializing database: %v", err)
-    }
+	_, err := db.Exec(query)
+	if err != nil {
+		log.Fatalf("Error creating tables: %s", err)
+	}
 }
 
-// Handle user authentication
-func authenticate(email, password string) (int, bool) {
-    var id int
-    var hashedPassword string
-
-    err := db.QueryRow("SELECT id, password FROM users WHERE email = ?", email).Scan(&id, &hashedPassword)
-    if err != nil {
-        return 0, false
-    }
-
-    if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-        return 0, false
-    }
-
-    return id, true
+// Helper function to render templates
+func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+	err := templates.ExecuteTemplate(w, tmpl+".html", data)
+	if err != nil {
+		http.Error(w, "Unable to load template", http.StatusInternalServerError)
+	}
 }
 
-// Handle user registration
-func registerUser(email, password string) bool {
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-    if err != nil {
-        return false
-    }
-
-    _, err = db.Exec("INSERT INTO users (email, password) VALUES (?, ?)", email, hashedPassword)
-    return err == nil
+// Middleware to check if user is logged in
+func getUserIDFromSession(r *http.Request) (string, bool) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		return "", false
+	}
+	userID, exists := sessions[cookie.Value]
+	return userID, exists
 }
 
-// Show login page
-func showLoginPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "login.html", nil)
+// Session handling
+func createSession(w http.ResponseWriter, userID string) {
+	sessionID := uuid.NewString()
+	sessions[sessionID] = userID
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+	})
 }
 
-// Handle login
-func handleLogin(c *gin.Context) {
-    email := c.PostForm("email")
-    password := c.PostForm("password")
-
-    var ok bool
-    userID, ok = authenticate(email, password)
-    if ok {
-        loggedIn = true
-        c.Redirect(http.StatusSeeOther, "/")
-    } else {
-        c.HTML(http.StatusUnauthorized, "login.html", gin.H{"Error": "Invalid email or password"})
-    }
+func destroySession(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		return
+	}
+	delete(sessions, cookie.Value)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		HttpOnly: true,
+	})
 }
 
-// Show register page
-func showRegisterPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "register.html", nil)
+// --- Handlers ---
+
+// Home handler
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	userID, isLoggedIn := getUserIDFromSession(r)
+	posts, err := getAllPosts()
+	if err != nil {
+		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Title      string
+		IsLoggedIn bool
+		UserID     string
+		Posts      []Post
+	}{
+		Title:      "Home",
+		IsLoggedIn: isLoggedIn,
+		UserID:     userID,
+		Posts:      posts,
+	}
+	renderTemplate(w, "home", data)
 }
 
-// Handle registration
-func handleRegister(c *gin.Context) {
-    email := c.PostForm("email")
-    password := c.PostForm("password")
+// Register handler
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		renderTemplate(w, "register", nil)
+	} else if r.Method == http.MethodPost {
+		email := r.FormValue("email")
+		username := r.FormValue("username")
+		password := r.FormValue("password")
 
-    if registerUser(email, password) {
-        c.Redirect(http.StatusSeeOther, "/login")
-    } else {
-        c.HTML(http.StatusInternalServerError, "register.html", gin.H{"Error": "Failed to register"})
-    }
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, "Unable to register", http.StatusInternalServerError)
+			return
+		}
+		err = createUser(email, username, string(hashedPassword))
+		if err != nil {
+			http.Error(w, "Unable to register", http.StatusBadRequest)
+			return
+		}
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	}
 }
 
-// Handle logout
-func handleLogout(c *gin.Context) {
-    loggedIn = false
-    userID = 0
-    c.Redirect(http.StatusSeeOther, "/login")
+// Login handler
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		renderTemplate(w, "login", nil)
+	} else if r.Method == http.MethodPost {
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
+		user, err := getUserByEmail(email)
+		if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
+			http.Error(w, "Invalid login", http.StatusUnauthorized)
+			return
+		}
+
+		createSession(w, user.ID)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
-// Show home page
-func showHomePage(c *gin.Context) {
-    if !loggedIn {
-        c.Redirect(http.StatusSeeOther, "/login")
-        return
-    }
-    c.HTML(http.StatusOK, "home.html", nil)
+// Create post handler
+func createPostHandler(w http.ResponseWriter, r *http.Request) {
+	userID, loggedIn := getUserIDFromSession(r)
+	if !loggedIn {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		renderTemplate(w, "create_post", nil)
+	} else if r.Method == http.MethodPost {
+		title := r.FormValue("title")
+		content := r.FormValue("content")
+		err := createPost(userID, title, content)
+		if err != nil {
+			http.Error(w, "Unable to create post", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
-// Show categories
-func showCategories(c *gin.Context) {
-    rows, err := db.Query("SELECT id, name FROM categories")
-    if err != nil {
-        c.String(http.StatusInternalServerError, "Failed to retrieve categories")
-        return
-    }
-    defer rows.Close()
-
-    var categories []map[string]interface{}
-    for rows.Next() {
-        var id int
-        var name string
-        if err := rows.Scan(&id, &name); err != nil {
-            c.String(http.StatusInternalServerError, "Failed to scan categories")
-            return
-        }
-        categories = append(categories, map[string]interface{}{
-            "id":   id,
-            "name": name,
-        })
-    }
-
-    c.HTML(http.StatusOK, "categories.html", gin.H{
-        "categories": categories,
-    })
+// View post handler
+func viewPostHandler(w http.ResponseWriter, r *http.Request) {
+	postID := r.URL.Query().Get("id")
+	post, err := getPostByID(postID)
+	if err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+	comments, err := getCommentsByPostID(postID)
+	if err != nil {
+		http.Error(w, "Unable to load comments", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Post     Post
+		Comments []Comment
+	}{
+		Post:     post,
+		Comments: comments,
+	}
+	renderTemplate(w, "view_post", data)
 }
 
-// Show posts in a category
-func showPostsInCategory(c *gin.Context) {
-    categoryID := c.Param("id")
+// --- Main Function ---
 
-    rows, err := db.Query("SELECT id, title, content FROM posts WHERE category_id = ?", categoryID)
-    if err != nil {
-        c.String(http.StatusInternalServerError, "Failed to retrieve posts")
-        return
-    }
-    defer rows.Close()
+func main() {
+	// Initialize the database
+	initDB()
 
-    var posts []map[string]interface{}
-    for rows.Next() {
-        var id int
-        var title, content string
-        if err := rows.Scan(&id, &title, &content); err != nil {
-            c.String(http.StatusInternalServerError, "Failed to scan posts")
-            return
-        }
-        posts = append(posts, map[string]interface{}{
-            "id":      id,
-            "title":   title,
-            "content": content,
-        })
-    }
+	// Load templates
+	templates = template.Must(template.ParseGlob("templates/*.html"))
 
-    c.HTML(http.StatusOK, "posts.html", gin.H{
-        "posts": posts,
-    })
+	// Routes
+	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/register", registerHandler)
+	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		destroySession(w, r)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+	http.HandleFunc("/createPost", createPostHandler)
+	http.HandleFunc("/viewPost", viewPostHandler)
+
+	// Serve static files (CSS, images)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	// Start server
+	log.Println("Server started on :8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal("Failed to start server: ", err)
+	}
 }
 
-// Like a post
-func likePost(c *gin.Context) {
-    postID := c.Param("id")
-    _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, true) ON CONFLICT(user_id, post_id) DO UPDATE SET is_liked = true", userID, postID)
-    if err != nil {
-        c.String(http.StatusInternalServerError, "Failed to like post")
-        return
-    }
-    c.Redirect(http.StatusSeeOther, "/category/"+postID)
-}
-
-// Dislike a post
-func dislikePost(c *gin.Context) {
-    postID := c.Param("id")
-    _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, false) ON CONFLICT(user_id, post_id) DO UPDATE SET is_liked = false", userID, postID)
-    if err != nil {
-        c.String(http.StatusInternalServerError, "Failed to dislike post")
-        return
-    }
-    c.Redirect(http.StatusSeeOther, "/category/"+postID)
-}
-
-// Comment on a post
-func commentOnPost(c *gin.Context) {
-    postID := c.Param("id")
-    content := c.PostForm("content")
-
-    _, err := db.Exec("INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)", postID, userID, content)
-    if err != nil {
-        c.String(http.StatusInternalServerError, "Failed to comment on post")
-        return
-    }
-    c.Redirect(http.StatusSeeOther, "/category/"+postID)
-}
-
-// package main
-
-// import (
-//     "database/sql"
-//     "net/http"
-//     "github.com/gin-gonic/gin"
-//     _ "github.com/mattn/go-sqlite3"
-//     "golang.org/x/crypto/bcrypt"
-//     "log"
-// )
-
-// var (
-//     db       *sql.DB
-//     loggedIn bool
-//     userID   int
-// )
-
-// func main() {
-//     var err error
-//     db, err = sql.Open("sqlite3", "./webapp.db")
-//     if err != nil {
-//         panic(err)
-//     }
-//     defer db.Close()
-
-//     // Initialize the database schema
-//     initializeDatabase()
-
-//     r := gin.Default()
-
-//     // Serve HTML files
-//     r.LoadHTMLGlob("templates/*")
-
-//     // Routes
-//     r.GET("/login", showLoginPage)
-//     r.POST("/login", handleLogin)
-//     r.GET("/register", showRegisterPage)
-//     r.POST("/register", handleRegister)
-//     r.GET("/logout", handleLogout)
-//     r.GET("/", showHomePage)
-//     r.GET("/categories", showCategories)
-//     r.GET("/category/:id", showPostsInCategory)
-//     r.POST("/post/:id/like", likePost)
-//     r.POST("/post/:id/dislike", dislikePost)
-//     r.POST("/post/:id/comment", commentOnPost)
-
-//     r.Run(":8080")
-// }
-
-// // Initialize the database schema
-// func initializeDatabase() {
-//     schema := `
-//     CREATE TABLE IF NOT EXISTS users (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         email TEXT UNIQUE NOT NULL,
-//         password TEXT NOT NULL
-//     );
-
-//     CREATE TABLE IF NOT EXISTS categories (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         name TEXT UNIQUE NOT NULL
-//     );
-
-//     CREATE TABLE IF NOT EXISTS posts (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         category_id INTEGER,
-//         title TEXT NOT NULL,
-//         content TEXT,
-//         FOREIGN KEY (category_id) REFERENCES categories(id)
-//     );
-
-//     CREATE TABLE IF NOT EXISTS likes (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         user_id INTEGER,
-//         post_id INTEGER,
-//         is_liked BOOLEAN,
-//         FOREIGN KEY (user_id) REFERENCES users(id),
-//         FOREIGN KEY (post_id) REFERENCES posts(id)
-//     );
-
-//     CREATE TABLE IF NOT EXISTS comments (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         post_id INTEGER,
-//         user_id INTEGER,
-//         content TEXT,
-//         FOREIGN KEY (post_id) REFERENCES posts(id),
-//         FOREIGN KEY (user_id) REFERENCES users(id)
-//     );
-//     `
-
-//     _, err := db.Exec(schema)
-//     if err != nil {
-//         log.Fatalf("Error initializing database: %v", err)
-//     }
-// }
-
-// // Helper function to handle user authentication
-// func authenticate(email, password string) (int, bool) {
-//     var id int
-//     var hashedPassword string
-
-//     err := db.QueryRow("SELECT id, password FROM users WHERE email = ?", email).Scan(&id, &hashedPassword)
-//     if err != nil {
-//         return 0, false
-//     }
-
-//     if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-//         return 0, false
-//     }
-
-//     return id, true
-// }
-
-// // Helper function to handle user registration
-// func registerUser(email, password string) bool {
-//     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-//     if err != nil {
-//         return false
-//     }
-
-//     _, err = db.Exec("INSERT INTO users (email, password) VALUES (?, ?)", email, hashedPassword)
-//     return err == nil
-// }
-
-// func showLoginPage(c *gin.Context) {
-//     c.HTML(http.StatusOK, "login.html", nil)
-// }
-
-// func handleLogin(c *gin.Context) {
-//     email := c.PostForm("email")
-//     password := c.PostForm("password")
-
-//     var ok bool
-//     userID, ok = authenticate(email, password)
-//     if ok {
-//         loggedIn = true
-//         c.Redirect(http.StatusSeeOther, "/")
-//     } else {
-//         c.HTML(http.StatusUnauthorized, "login.html", gin.H{"Error": "Invalid email or password"})
-//     }
-// }
-
-// func showRegisterPage(c *gin.Context) {
-//     c.HTML(http.StatusOK, "register.html", nil)
-// }
-
-// func handleRegister(c *gin.Context) {
-//     email := c.PostForm("email")
-//     password := c.PostForm("password")
-
-//     if registerUser(email, password) {
-//         c.Redirect(http.StatusSeeOther, "/login")
-//     } else {
-//         c.HTML(http.StatusInternalServerError, "register.html", gin.H{"Error": "Failed to register"})
-//     }
-// }
-
-// func handleLogout(c *gin.Context) {
-//     loggedIn = false
-//     userID = 0
-//     c.Redirect(http.StatusSeeOther, "/login")
-// }
-
-// func showHomePage(c *gin.Context) {
-//     if !loggedIn {
-//         c.Redirect(http.StatusSeeOther, "/login")
-//         return
-//     }
-//     c.HTML(http.StatusOK, "home.html", nil)
-// }
-
-// func showCategories(c *gin.Context) {
-//     rows, err := db.Query("SELECT id, name FROM categories")
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to retrieve categories")
-//         return
-//     }
-//     defer rows.Close()
-
-//     var categories []map[string]interface{}
-//     for rows.Next() {
-//         var id int
-//         var name string
-//         if err := rows.Scan(&id, &name); err != nil {
-//             c.String(http.StatusInternalServerError, "Failed to scan categories")
-//             return
-//         }
-//         categories = append(categories, map[string]interface{}{
-//             "id":   id,
-//             "name": name,
-//         })
-//     }
-
-//     c.HTML(http.StatusOK, "categories.html", gin.H{
-//         "categories": categories,
-//     })
-// }
-
-// func showPostsInCategory(c *gin.Context) {
-//     categoryID := c.Param("id")
-
-//     rows, err := db.Query("SELECT id, title, content FROM posts WHERE category_id = ?", categoryID)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to retrieve posts")
-//         return
-//     }
-//     defer rows.Close()
-
-//     var posts []map[string]interface{}
-//     for rows.Next() {
-//         var id int
-//         var title, content string
-//         if err := rows.Scan(&id, &title, &content); err != nil {
-//             c.String(http.StatusInternalServerError, "Failed to scan posts")
-//             return
-//         }
-//         posts = append(posts, map[string]interface{}{
-//             "id":      id,
-//             "title":   title,
-//             "content": content,
-//         })
-//     }
-
-//     c.HTML(http.StatusOK, "posts.html", gin.H{
-//         "posts": posts,
-//     })
-// }
-
-// func likePost(c *gin.Context) {
-//     postID := c.Param("id")
-//     _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, true) ON CONFLICT(user_id, post_id) DO UPDATE SET is_liked = true", userID, postID)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to like post")
-//         return
-//     }
-//     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// }
-
-// func dislikePost(c *gin.Context) {
-//     postID := c.Param("id")
-//     _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, false) ON CONFLICT(user_id, post_id) DO UPDATE SET is_liked = false", userID, postID)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to dislike post")
-//         return
-//     }
-//     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// }
-
-// func commentOnPost(c *gin.Context) {
-//     postID := c.Param("id")
-//     content := c.PostForm("content")
-
-//     _, err := db.Exec("INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)", postID, userID, content)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to comment on post")
-//         return
-//     }
-//     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// }
-
-// func handleLogin(c *gin.Context) {
-//     email := c.PostForm("email")
-//     password := c.PostForm("password")
-
-//     var ok bool
-//     userID, ok = authenticate(email, password)
-//     if ok {
-//         loggedIn = true
-//         c.Redirect(http.StatusSeeOther, "/")
-//     } else {
-//         c.HTML(http.StatusUnauthorized, "login.html", gin.H{"Error": "Invalid email or password"})
-//     }
-// }
-
-// func authenticate(email, password string) (int, bool) {
-//     var id int
-//     var hashedPassword string
-
-//     err := db.QueryRow("SELECT id, password FROM users WHERE email = ?", email).Scan(&id, &hashedPassword)
-//     if err != nil {
-//         return 0, false
-//     }
-
-//     if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-//         return 0, false
-//     }
-
-//     return id, true
-// }
-
-// func registerUser(email, password string) bool {
-//     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-//     if err != nil {
-//         return false
-//     }
-
-//     _, err = db.Exec("INSERT INTO users (email, password) VALUES (?, ?)", email, hashedPassword)
-//     return err == nil
-// }
-
-
-// package main
-
-// import (
-//     "database/sql"
-//     "net/http"
-//     "github.com/gin-gonic/gin"
-//     _ "github.com/mattn/go-sqlite3"
-//     "golang.org/x/crypto/bcrypt"
-//     "log"
-//     "github.com/satori/go.uuid"
-// )
-
-// var (
-//     db       *sql.DB
-//     loggedIn bool
-//     userID   int
-// )
-
-// func main() {
-//     var err error
-//     db, err = sql.Open("sqlite3", "./webapp.db")
-//     if err != nil {
-//         panic(err)
-//     }
-//     defer db.Close()
-
-//     // Initialize the database schema
-//     initializeDatabase()
-
-//     r := gin.Default()
-
-//     // Serve HTML files
-//     r.LoadHTMLGlob("templates/*")
-
-//     // Routes
-//     r.GET("/login", showLoginPage)
-//     r.POST("/login", handleLogin)
-//     r.GET("/register", showRegisterPage)
-//     r.POST("/register", handleRegister)
-//     r.GET("/logout", handleLogout)
-//     r.GET("/", showHomePage)
-//     r.GET("/categories", showCategories)
-//     r.GET("/category/:id", showPostsInCategory)
-//     r.POST("/post/:id/like", likePost)
-//     r.POST("/post/:id/dislike", dislikePost)
-//     r.POST("/post/:id/comment", commentOnPost)
-
-//     r.Run(":8080")
-// }
-
-// // Initialize the database schema
-// func initializeDatabase() {
-//     schema := `
-//     CREATE TABLE IF NOT EXISTS users (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         email TEXT UNIQUE NOT NULL,
-//         password TEXT NOT NULL
-//     );
-
-//     CREATE TABLE IF NOT EXISTS categories (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         name TEXT UNIQUE NOT NULL
-//     );
-
-//     CREATE TABLE IF NOT EXISTS posts (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         category_id INTEGER,
-//         title TEXT NOT NULL,
-//         content TEXT,
-//         FOREIGN KEY (category_id) REFERENCES categories(id)
-//     );
-
-//     CREATE TABLE IF NOT EXISTS likes (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         user_id INTEGER,
-//         post_id INTEGER,
-//         is_liked BOOLEAN,
-//         FOREIGN KEY (user_id) REFERENCES users(id),
-//         FOREIGN KEY (post_id) REFERENCES posts(id)
-//     );
-
-//     CREATE TABLE IF NOT EXISTS comments (
-//         id INTEGER PRIMARY KEY AUTOINCREMENT,
-//         post_id INTEGER,
-//         user_id INTEGER,
-//         content TEXT,
-//         FOREIGN KEY (post_id) REFERENCES posts(id),
-//         FOREIGN KEY (user_id) REFERENCES users(id)
-//     );
-//     `
-
-//     _, err := db.Exec(schema)
-//     if err != nil {
-//         log.Fatalf("Error initializing database: %v", err)
-//     }
-// }
-
-// // Helper function to handle user authentication
-// func authenticate(email, password string) (int, bool) {
-//     var id int
-//     var hashedPassword string
-
-//     err := db.QueryRow("SELECT id, password FROM users WHERE email = ?", email).Scan(&id, &hashedPassword)
-//     if err != nil {
-//         return 0, false
-//     }
-
-//     if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-//         return 0, false
-//     }
-
-//     return id, true
-// }
-
-// // Helper function to handle user registration
-// func registerUser(email, password string) bool {
-//     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-//     if err != nil {
-//         return false
-//     }
-
-//     _, err = db.Exec("INSERT INTO users (email, password) VALUES (?, ?)", email, hashedPassword)
-//     return err == nil
-// }
-
-// func showLoginPage(c *gin.Context) {
-//     c.HTML(http.StatusOK, "login.html", nil)
-// }
-
-// func handleLogin(c *gin.Context) {
-//     email := c.PostForm("email")
-//     password := c.PostForm("password")
-
-//     var ok bool
-//     userID, ok = authenticate(email, password)
-//     if ok {
-//         loggedIn = true
-//         c.Redirect(http.StatusSeeOther, "/")
-//     } else {
-//         c.HTML(http.StatusUnauthorized, "login.html", gin.H{"Error": "Invalid email or password"})
-//     }
-// }
-
-// func showRegisterPage(c *gin.Context) {
-//     c.HTML(http.StatusOK, "register.html", nil)
-// }
-
-// func handleRegister(c *gin.Context) {
-//     email := c.PostForm("email")
-//     password := c.PostForm("password")
-
-//     if registerUser(email, password) {
-//         c.Redirect(http.StatusSeeOther, "/login")
-//     } else {
-//         c.HTML(http.StatusInternalServerError, "register.html", gin.H{"Error": "Failed to register"})
-//     }
-// }
-
-// func handleLogout(c *gin.Context) {
-//     loggedIn = false
-//     userID = 0
-//     c.Redirect(http.StatusSeeOther, "/login")
-// }
-
-// func showHomePage(c *gin.Context) {
-//     if !loggedIn {
-//         c.Redirect(http.StatusSeeOther, "/login")
-//         return
-//     }
-//     c.HTML(http.StatusOK, "home.html", nil)
-// }
-
-// func showCategories(c *gin.Context) {
-//     rows, err := db.Query("SELECT id, name FROM categories")
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to retrieve categories")
-//         return
-//     }
-//     defer rows.Close()
-
-//     var categories []map[string]interface{}
-//     for rows.Next() {
-//         var id int
-//         var name string
-//         if err := rows.Scan(&id, &name); err != nil {
-//             c.String(http.StatusInternalServerError, "Failed to scan categories")
-//             return
-//         }
-//         categories = append(categories, map[string]interface{}{
-//             "id":   id,
-//             "name": name,
-//         })
-//     }
-
-//     c.HTML(http.StatusOK, "categories.html", gin.H{
-//         "categories": categories,
-//     })
-// }
-
-// func showPostsInCategory(c *gin.Context) {
-//     categoryID := c.Param("id")
-
-//     rows, err := db.Query("SELECT id, title, content FROM posts WHERE category_id = ?", categoryID)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to retrieve posts")
-//         return
-//     }
-//     defer rows.Close()
-
-//     var posts []map[string]interface{}
-//     for rows.Next() {
-//         var id int
-//         var title, content string
-//         if err := rows.Scan(&id, &title, &content); err != nil {
-//             c.String(http.StatusInternalServerError, "Failed to scan posts")
-//             return
-//         }
-//         posts = append(posts, map[string]interface{}{
-//             "id":      id,
-//             "title":   title,
-//             "content": content,
-//         })
-//     }
-
-//     c.HTML(http.StatusOK, "posts.html", gin.H{
-//         "posts": posts,
-//     })
-// }
-
-// func likePost(c *gin.Context) {
-//     postID := c.Param("id")
-//     _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, true) ON CONFLICT(user_id, post_id) DO UPDATE SET is_liked = true", userID, postID)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to like post")
-//         return
-//     }
-//     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// }
-
-// func dislikePost(c *gin.Context) {
-//     postID := c.Param("id")
-//     _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, false) ON CONFLICT(user_id, post_id) DO UPDATE SET is_liked = false", userID, postID)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to dislike post")
-//         return
-//     }
-//     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// }
-
-// func commentOnPost(c *gin.Context) {
-//     postID := c.Param("id")
-//     content := c.PostForm("content")
-
-//     _, err := db.Exec("INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)", postID, userID, content)
-//     if err != nil {
-//         c.String(http.StatusInternalServerError, "Failed to comment on post")
-//         return
-//     }
-//     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// }
-
-// // package main
-
-// // import (
-// //     "database/sql"
-// //     "net/http"
-// //     "github.com/gin-gonic/gin"
-// //     _ "github.com/go-sql-driver/mysql"
-// //     "golang.org/x/crypto/bcrypt"
-// //     "log"
-// // )
-
-// // var (
-// //     db        *sql.DB
-// //     loggedIn  bool
-// //     userID    int
-// // )
-
-// // func main() {
-// //     var err error
-// //     db, err = sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/webapp")
-// //     if err != nil {
-// //         panic(err)
-// //     }
-// //     defer db.Close()
-
-// //     r := gin.Default()
-
-// //     // Serve HTML files
-// //     r.LoadHTMLGlob("templates/*")
-
-// //     // Routes
-// //     r.GET("/login", showLoginPage)
-// //     r.POST("/login", handleLogin)
-// //     r.GET("/register", showRegisterPage)
-// //     r.POST("/register", handleRegister)
-// //     r.GET("/logout", handleLogout)
-// //     r.GET("/", showHomePage)
-// //     r.GET("/categories", showCategories)
-// //     r.GET("/category/:id", showPostsInCategory)
-// //     r.POST("/post/:id/like", likePost)
-// //     r.POST("/post/:id/dislike", dislikePost)
-// //     r.POST("/post/:id/comment", commentOnPost)
-
-// //     r.Run(":8080")
-// // }
-
-// // // Helper function to handle user authentication
-// // func authenticate(email, password string) (int, bool) {
-// //     var id int
-// //     var hashedPassword string
-
-// //     err := db.QueryRow("SELECT id, password FROM users WHERE email = ?", email).Scan(&id, &hashedPassword)
-// //     if err != nil {
-// //         return 0, false
-// //     }
-
-// //     if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-// //         return 0, false
-// //     }
-
-// //     return id, true
-// // }
-
-// // // Helper function to handle user registration
-// // func registerUser(email, password string) bool {
-// //     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-// //     if err != nil {
-// //         return false
-// //     }
-
-// //     _, err = db.Exec("INSERT INTO users (email, password) VALUES (?, ?)", email, hashedPassword)
-// //     return err == nil
-// // }
-
-// // func showLoginPage(c *gin.Context) {
-// //     c.HTML(http.StatusOK, "login.html", nil)
-// // }
-
-// // func handleLogin(c *gin.Context) {
-// //     email := c.PostForm("email")
-// //     password := c.PostForm("password")
-
-// //     var ok bool
-// //     userID, ok = authenticate(email, password)
-// //     if ok {
-// //         loggedIn = true
-// //         c.Redirect(http.StatusSeeOther, "/")
-// //     } else {
-// //         c.HTML(http.StatusUnauthorized, "login.html", gin.H{"Error": "Invalid email or password"})
-// //     }
-// // }
-
-// // func showRegisterPage(c *gin.Context) {
-// //     c.HTML(http.StatusOK, "register.html", nil)
-// // }
-
-// // func handleRegister(c *gin.Context) {
-// //     email := c.PostForm("email")
-// //     password := c.PostForm("password")
-
-// //     if registerUser(email, password) {
-// //         c.Redirect(http.StatusSeeOther, "/login")
-// //     } else {
-// //         c.HTML(http.StatusInternalServerError, "register.html", gin.H{"Error": "Failed to register"})
-// //     }
-// // }
-
-// // func handleLogout(c *gin.Context) {
-// //     loggedIn = false
-// //     userID = 0
-// //     c.Redirect(http.StatusSeeOther, "/login")
-// // }
-
-// // func showHomePage(c *gin.Context) {
-// //     if !loggedIn {
-// //         c.Redirect(http.StatusSeeOther, "/login")
-// //         return
-// //     }
-// //     c.HTML(http.StatusOK, "home.html", nil)
-// // }
-
-// // func showCategories(c *gin.Context) {
-// //     rows, err := db.Query("SELECT id, name FROM categories")
-// //     if err != nil {
-// //         c.String(http.StatusInternalServerError, "Failed to retrieve categories")
-// //         return
-// //     }
-// //     defer rows.Close()
-
-// //     var categories []map[string]interface{}
-// //     for rows.Next() {
-// //         var id int
-// //         var name string
-// //         if err := rows.Scan(&id, &name); err != nil {
-// //             c.String(http.StatusInternalServerError, "Failed to scan categories")
-// //             return
-// //         }
-// //         categories = append(categories, map[string]interface{}{
-// //             "id":   id,
-// //             "name": name,
-// //         })
-// //     }
-
-// //     c.HTML(http.StatusOK, "categories.html", gin.H{
-// //         "categories": categories,
-// //     })
-// // }
-
-// // func showPostsInCategory(c *gin.Context) {
-// //     categoryID := c.Param("id")
-
-// //     rows, err := db.Query("SELECT id, title, content FROM posts WHERE category_id = ?", categoryID)
-// //     if err != nil {
-// //         c.String(http.StatusInternalServerError, "Failed to retrieve posts")
-// //         return
-// //     }
-// //     defer rows.Close()
-
-// //     var posts []map[string]interface{}
-// //     for rows.Next() {
-// //         var id int
-// //         var title, content string
-// //         if err := rows.Scan(&id, &title, &content); err != nil {
-// //             c.String(http.StatusInternalServerError, "Failed to scan posts")
-// //             return
-// //         }
-// //         posts = append(posts, map[string]interface{}{
-// //             "id":      id,
-// //             "title":   title,
-// //             "content": content,
-// //         })
-// //     }
-
-// //     c.HTML(http.StatusOK, "posts.html", gin.H{
-// //         "posts": posts,
-// //     })
-// // }
-
-// // func likePost(c *gin.Context) {
-// //     postID := c.Param("id")
-// //     _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, true) ON DUPLICATE KEY UPDATE is_liked = true", userID, postID)
-// //     if err != nil {
-// //         c.String(http.StatusInternalServerError, "Failed to like post")
-// //         return
-// //     }
-// //     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// // }
-
-// // func dislikePost(c *gin.Context) {
-// //     postID := c.Param("id")
-// //     _, err := db.Exec("INSERT INTO likes (user_id, post_id, is_liked) VALUES (?, ?, false) ON DUPLICATE KEY UPDATE is_liked = false", userID, postID)
-// //     if err != nil {
-// //         c.String(http.StatusInternalServerError, "Failed to dislike post")
-// //         return
-// //     }
-// //     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// // }
-
-// // func commentOnPost(c *gin.Context) {
-// //     postID := c.Param("id")
-// //     content := c.PostForm("content")
-
-// //     _, err := db.Exec("INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)", postID, userID, content)
-// //     if err != nil {
-// //         c.String(http.StatusInternalServerError, "Failed to comment on post")
-// //         return
-// //     }
-// //     c.Redirect(http.StatusSeeOther, "/category/"+postID)
-// // }
-
-// // // package main
-
-// // // import (
-// // //     "database/sql"
-// // //     "net/http"
-// // //     "github.com/gin-gonic/gin"
-// // //     _ "github.com/go-sql-driver/mysql"
-// // // )
-
-// // // var (
-// // //     db        *sql.DB
-// // //     loggedIn  bool
-// // // )
-
-// // // func main() {
-// // //     var err error
-// // //     db, err = sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/webapp")
-// // //     if err != nil {
-// // //         panic(err)
-// // //     }
-// // //     defer db.Close()
-
-// // //     r := gin.Default()
-
-// // //     // Serve HTML files
-// // //     r.LoadHTMLGlob("templates/*")
-
-// // //     // Login route
-// // //     r.GET("/login", func(c *gin.Context) {
-// // //         c.HTML(http.StatusOK, "login.html", nil)
-// // //     })
-
-// // //     r.POST("/login", func(c *gin.Context) {
-// // //         username := c.PostForm("username")
-// // //         password := c.PostForm("password")
-
-// // //         // Simple hardcoded check - replace with real authentication
-// // //         if username == "admin" && password == "password" {
-// // //             loggedIn = true
-// // //             c.Redirect(http.StatusSeeOther, "/")
-// // //         } else {
-// // //             c.HTML(http.StatusUnauthorized, "login.html", gin.H{
-// // //                 "Error": "Invalid username or password",
-// // //             })
-// // //         }
-// // //     })
-
-// // //     // Middleware to check login status
-// // //     r.Use(func(c *gin.Context) {
-// // //         if !loggedIn && c.Request.URL.Path != "/login" {
-// // //             c.Redirect(http.StatusSeeOther, "/login")
-// // //             return
-// // //         }
-// // //         c.Next()
-// // //     })
-
-// // //     // Home route
-// // //     r.GET("/", func(c *gin.Context) {
-// // //         c.HTML(http.StatusOK, "index.html", nil)
-// // //     })
-
-// // //     // Submit route
-// // //     r.POST("/submit", func(c *gin.Context) {
-// // //         content := c.PostForm("content")
-
-// // //         _, err := db.Exec("INSERT INTO messages (content) VALUES (?)", content)
-// // //         if err != nil {
-// // //             c.String(http.StatusInternalServerError, "Failed to insert data")
-// // //             return
-// // //         }
-// // //         c.Redirect(http.StatusSeeOther, "/")
-// // //     })
-
-// // //     // Messages route
-// // //     r.GET("/messages", func(c *gin.Context) {
-// // //         rows, err := db.Query("SELECT id, content FROM messages")
-// // //         if err != nil {
-// // //             c.String(http.StatusInternalServerError, "Failed to retrieve messages")
-// // //             return
-// // //         }
-// // //         defer rows.Close()
-
-// // //         var messages []map[string]interface{}
-// // //         for rows.Next() {
-// // //             var id int
-// // //             var content string
-// // //             if err := rows.Scan(&id, &content); err != nil {
-// // //                 c.String(http.StatusInternalServerError, "Failed to scan rows")
-// // //                 return
-// // //             }
-// // //             messages = append(messages, map[string]interface{}{
-// // //                 "id":      id,
-// // //                 "content": content,
-// // //             })
-// // //         }
-
-// // //         c.HTML(http.StatusOK, "messages.html", gin.H{
-// // //             "messages": messages,
-// // //         })
-// // //     })
-
-// // //     r.Run(":8080")
-	
-// // // }
