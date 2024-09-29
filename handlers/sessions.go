@@ -3,9 +3,13 @@ import (
 	"time"
     "github.com/google/uuid"
 	"net/http"
+    
 )
+var sessions = map[string]string{} // key is the session ID, value is the user ID
 
-func createSession(w http.ResponseWriter, userID string) {
+
+
+func CreateSession(w http.ResponseWriter, userID string) {
     // Generate a new UUID for the session ID
     sessionID := uuid.NewString()
 
@@ -21,7 +25,7 @@ func createSession(w http.ResponseWriter, userID string) {
     })
 }
 
-func getUserIDFromSession(r *http.Request) (string, bool) {
+func GetUserIDFromSession(r *http.Request) (string, bool) {
     cookie, err := r.Cookie("session_id")
     if err != nil {
         return "", false
@@ -37,7 +41,7 @@ func getUserIDFromSession(r *http.Request) (string, bool) {
 }
 
 // after the user log we delete 
-func destroySession(w http.ResponseWriter, r *http.Request) {
+func DestroySession(w http.ResponseWriter, r *http.Request) {
     cookie, err := r.Cookie("session_id")
     if err != nil {
         return

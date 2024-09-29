@@ -3,117 +3,143 @@ package handlers
 
 import(
 
-     temp "Forum/templates"
+    "html/template"
+    "golang.org/x/crypto/bcrypt"
 	"net/http"
     "log"
+    "Forum/models"
+	
+    
 )
+var templates = template.Must(template.ParseGlob("templates/*.html"))
 
-
-
-func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
-    templates := temp.Must(temp.ParseFiles(
-        "templates/base.html",
-        "templates/" + tmpl + ".html",
-    ))
-    err := templates.ExecuteTemplate(w, "base", data)
+// renderTemplate helper function
+func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+    err := templates.ExecuteTemplate(w, tmpl+".html", data)
     if err != nil {
         http.Error(w, "Unable to load template", http.StatusInternalServerError)
     }
 }
 
+// BaseHandler serves pages with the base layout (base.html)
+func BaseHandler(w http.ResponseWriter, r *http.Request) {
+    userID, isLoggedIn := GetUserIDFromSession(r)
+    templateName:= "base"
+    
+        pageData:= make(map[string]interface{})
+    
+    
+    // Common data across all templates using base.html
+    pageData["IsLoggedIn"] = isLoggedIn
+    pageData["UserID"] = userID
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-    data := struct {
-        Title     string
-        IsLoggedIn bool
-        Posts     []Post // Assuming Post is a struct you've defined for posts
-    }{
-        Title: "Home",
-        IsLoggedIn: false, // You will update this later with session data
-        Posts: []Post{}, // Fetch posts from database here
+    // Render the template with base.html as the layout
+    err := templates.ExecuteTemplate(w, templateName+".html", pageData)
+    if err != nil {
+        http.Error(w, "Unable to render page", http.StatusInternalServerError)
     }
+}
 
-    renderTemplate(w, "home", data)
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	userID, isLoggedIn := GetUserIDFromSession(r)
+	posts, err := models.GetAllPosts()
+	if err != nil {
+		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Title      string
+		IsLoggedIn bool
+		UserID     string
+		Posts      []models.Post
+	}{
+		Title:      "Home",
+		IsLoggedIn: isLoggedIn,
+		UserID:     userID,
+		Posts:      posts,
+	}
+	RenderTemplate(w, "home", data)
 }
 
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method == http.MethodGet {
         data := struct {
             Title string
         }{
             Title: "Register",
         }
-        renderTemplate(w, "register", data)
+        RenderTemplate(w, "register", data)
     } else if r.Method == http.MethodPost {
         // Handle form submission logic for user registration
     }
 }
 
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		RenderTemplate(w, "login", nil)
+	} else if r.Method == http.MethodPost {
+		email := r.FormValue("email")
+		password := r.FormValue("password")
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodGet {
-        w.Header().Set("Content-Type", "text/html")
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte(`<form action="/login" method="post">
-                            Email: <input type="email" name="email"><br>
-                            Password: <input type="password" name="password"><br>
-                            <input type="submit" value="Login">
-                        </form>`))
-    } else if r.Method == http.MethodPost {
-        email := r.FormValue("email")
-        password := r.FormValue("password")
+		user, err := models.GetUserByEmail(email)
+		if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
+			http.Error(w, "Invalid login", http.StatusUnauthorized)
+			return
+		}
 
-        // Logic to validate credentials will go here (compare email & password with DB)
-
-        log.Printf("User logged in: %s", email)
-
-      //after validation is successful, you'd get the userID here
-
-		createSession(w, userID)
-
-        // For now, just redirect to home page after "login"
-
-        http.Redirect(w, r, "/", http.StatusSeeOther)
-    }
+		CreateSession(w, user.Username)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
 
+func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
+	userID, loggedIn := GetUserIDFromSession(r)
+	if !loggedIn {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-func createPostHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodGet {
-        w.Header().Set("Content-Type", "text/html")
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte(`<form action="/createPost" method="post">
-                            Title: <input type="text" name="title"><br>
-                            Content: <textarea name="content"></textarea><br>
-                            <input type="submit" value="Create Post">
-                        </form>`))
-    } else if r.Method == http.MethodPost {
-        title := r.FormValue("title")
-        content := r.FormValue("content")
-
-        // Logic to store post in the database
-
-        log.Printf("New post created: %s", title)
-
-        // Redirect to home page after post creation
-        http.Redirect(w, r, "/", http.StatusSeeOther)
-    }
-}
-
-func viewPostHandler(w http.ResponseWriter, r *http.Request) {
-    postID := r.URL.Query().Get("id")
-
-    // Logic to fetch the post from the database
-
-    w.Header().Set("Content-Type", "text/html")
-    w.WriteHeader(http.StatusOK)
-    w.Write([]byte("<h1>Viewing Post: " + postID + "</h1><p>Post content goes here...</p>"))
+	if r.Method == http.MethodGet {
+		RenderTemplate(w, "create_post", nil)
+	} else if r.Method == http.MethodPost {
+		title := r.FormValue("title")
+		content := r.FormValue("content")
+		err := models.CreatePost(userID, title, content)
+		if err != nil {
+			http.Error(w, "Unable to create post", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
 
-func likeHandler(w http.ResponseWriter, r *http.Request) {
+func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
+	postID := r.URL.Query().Get("id")
+	post, err := models.GetPostByID(postID)
+	if err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+	comments, err := models.GetCommentsByPostID(postID)
+	if err != nil {
+		http.Error(w, "Unable to load comments", http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		Post       *models.Post
+		Comments []models.Comment
+	}{
+		Post:     post,
+		Comments: comments,
+	}
+	RenderTemplate(w, "view_post", data)
+}
+
+
+func LikeHandler(w http.ResponseWriter, r *http.Request) {
     postID := r.URL.Query().Get("post_id")
     like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
 
@@ -123,9 +149,9 @@ func likeHandler(w http.ResponseWriter, r *http.Request) {
     http.Redirect(w, r, "/viewPost?id="+postID, http.StatusSeeOther)
 }
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     // Destroy the session
-    destroySession(w, r)
+    DestroySession(w, r)
 
     // Redirect to home page
     http.Redirect(w, r, "/", http.StatusSeeOther)
