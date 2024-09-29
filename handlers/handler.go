@@ -22,9 +22,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 }
 
 // BaseHandler serves pages with the base layout (base.html)
-func BaseHandler(w http.ResponseWriter, r *http.Request) {
+func BaseHandler(w http.ResponseWriter, r *http.Request,templateName string, data interface{}) {
     userID, isLoggedIn := GetUserIDFromSession(r)
-    templateName:= "base"
+    templateName = "base"
     
         pageData:= make(map[string]interface{})
     
@@ -58,7 +58,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:     userID,
 		Posts:      posts,
 	}
-	RenderTemplate(w, "home", data)
+	BaseHandler(w, r, "home", data)
 }
 
 
@@ -71,10 +71,48 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
         }
         RenderTemplate(w, "register", data)
     } else if r.Method == http.MethodPost {
-        // Handle form submission logic for user registration
+        // Extract form data
+        email := r.FormValue("email")
+        username := r.FormValue("username")
+        password := r.FormValue("password")
+
+        // Validate inputs
+        if email == "" || username == "" || password == "" {
+            http.Error(w, "All fields are required", http.StatusBadRequest)
+            return
+        }
+
+        // Hash the password
+        hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+        if err != nil {
+            log.Println("Error hashing password:", err)
+            http.Error(w, "Internal server error", http.StatusInternalServerError)
+            return
+        }
+
+        // Create a new user object
+        newUser := models.User{
+            Email:    email,
+            Username: username,
+            Password: string(hashedPassword),
+        }
+
+        // Save the user to the database
+        err = models.CreateUser(newUser)
+        if err != nil {
+            if err == models.ErrUserExists {
+                http.Error(w, "Email or username already exists", http.StatusBadRequest)
+            } else {
+                log.Println("Error creating user:", err)
+                http.Error(w, "Internal server error", http.StatusInternalServerError)
+            }
+            return
+        }
+		
+        // Redirect to the login page or home page
+        http.Redirect(w, r, "/login", http.StatusSeeOther)
     }
 }
-
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		RenderTemplate(w, "login", nil)

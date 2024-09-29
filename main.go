@@ -22,8 +22,8 @@ func main() {
 
 	
 	// Routes
-	http.HandleFunc("/", handlers.BaseHandler)
-	http.HandleFunc("/Home", handlers.HomeHandler)
+	
+	http.HandleFunc("/", handlers.HomeHandler)
 	http.HandleFunc("/register", handlers.RegisterHandler)
 	http.HandleFunc("/login",handlers.LoginHandler)
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {

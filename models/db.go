@@ -6,10 +6,13 @@ import (
     "database/sql"
     "errors"
 	"log"
-    _ "modernc.org/sqlite"  
+    _ "modernc.org/sqlite" 
+    "fmt"
+    
 )
 
 
+var ErrUserExists = errors.New("user already exists")
 var db *sql.DB
 
 // User structure
@@ -98,13 +101,31 @@ func CreateTables() {
 }
 
 // Create user
-func CreateUser(email, username, hashedPassword string) error {
-    stmt, err := db.Prepare("INSERT INTO users(email, username, password) VALUES(?, ?, ?)")
+
+
+
+// CreateUser adds a new user to the database
+func CreateUser(user User) error {
+    // Prepare the SQL statement
+    stmt, err := db.Prepare("INSERT INTO users (email, username, password) VALUES (?, ?, ?)")
     if err != nil {
-        return err
+        log.Printf("Failed to prepare statement: %v", err)
+        return fmt.Errorf("failed to prepare statement: %w", err)
     }
-    _, err = stmt.Exec(email, username, hashedPassword)
-    return err
+    defer stmt.Close()
+
+    // Execute the statement with user data
+    _, err = stmt.Exec(user.Email, user.Username, user.Password)
+    if err != nil {
+        // Check for unique constraint violation
+        if err.Error() == "UNIQUE constraint failed: users.email, users.username" {
+            return ErrUserExists
+        }
+        log.Printf("Failed to execute statement: %v", err)
+        return fmt.Errorf("failed to execute statement: %w", err)
+    }
+
+    return nil
 }
 
 // Get user by email
