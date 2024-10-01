@@ -8,7 +8,7 @@ import (
 	"log"
     _ "modernc.org/sqlite" 
     "fmt"
-    
+    	// "strconv"
 )
 
 
@@ -138,6 +138,16 @@ func GetUserByEmail(email string) (*User, error) {
     }
     return &user, nil
 }
+// func GetUserByID(id string) (*User, error) {
+//     var user User
+//     intID , _ := strconv.Atoi(id)
+//     err := db.QueryRow("SELECT id, email, username, password FROM users WHERE id = ?", intID).
+//         Scan(&user.ID, &user.Email, &user.Username, &user.Password)
+//     if err != nil {
+//         return nil, errors.New("user not found")
+//     }
+//     return &user ,err
+// }
 
 // Get all posts
 func GetAllPosts() ([]Post, error) {

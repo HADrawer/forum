@@ -8,7 +8,6 @@ import(
 	"net/http"
     "log"
     "Forum/models"
-	
     
 )
 var templates = template.Must(template.ParseGlob("templates/*.html"))
@@ -24,15 +23,16 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 // BaseHandler serves pages with the base layout (base.html)
 func BaseHandler(w http.ResponseWriter, r *http.Request,templateName string, data interface{}) {
     userID, isLoggedIn := GetUserIDFromSession(r)
+    // user1,_ := models.GetUserByID(userID)
     templateName = "base"
     
         pageData:= make(map[string]interface{})
     
-    
+
     // Common data across all templates using base.html
     pageData["IsLoggedIn"] = isLoggedIn
     pageData["UserID"] = userID
-
+    // pageData["Username"] = user1.Username
     // Render the template with base.html as the layout
     err := templates.ExecuteTemplate(w, templateName+".html", pageData)
     if err != nil {

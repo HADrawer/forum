@@ -13,6 +13,7 @@
             {{if .IsLoggedIn}}
                 <a href="/createPost">Create Post</a>
                 <a href="/logout">Logout</a>
+                <h1 class="Username">{{.Username}}</h1>
             {{else}}
                 <a href="/register" >Register</a>
                 
