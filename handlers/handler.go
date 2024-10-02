@@ -6,6 +6,7 @@ import(
     "html/template"
     "golang.org/x/crypto/bcrypt"
 	"net/http"
+    "log"
     "Forum/models"
     
 )
@@ -29,7 +30,6 @@ func BaseHandler(w http.ResponseWriter, r *http.Request,templateName string, dat
     
     // Common data across all templates using base.html
     pageData["IsLoggedIn"] = isLoggedIn
-    log.Printf(userID)
     pageData["UserID"] = userID
     
     // Render the template with base.html as the layout
@@ -102,6 +102,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
             if err == models.ErrUserExists {
                 http.Error(w, "Email or username already exists", http.StatusBadRequest)
             } else {
+                log.Println("Error creating user:", err)
                 http.Error(w, "Internal server error", http.StatusInternalServerError)
             }
             return
