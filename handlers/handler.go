@@ -154,26 +154,32 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
-	postID := r.URL.Query().Get("id")
-	post, err := models.GetPostByID(postID)
-	if err != nil {
-		http.Error(w, "Post not found", http.StatusNotFound)
-		return
-	}
-	comments, err := models.GetCommentsByPostID(postID)
-	if err != nil {
-		http.Error(w, "Unable to load comments", http.StatusInternalServerError)
-		return
-	}
-	data := struct {
-		Post       *models.Post
-		Comments []models.Comment
-	}{
-		Post:     post,
-		Comments: comments,
-	}
-	RenderTemplate(w, "view_post", data)
+    postID := r.URL.Query().Get("id")
+    post, err := models.GetPostByID(postID)
+    if err != nil {
+        w.WriteHeader(http.StatusNotFound) // Set the 404 status code
+        RenderTemplate(w, "404", nil) // Render custom 404 page
+        return
+    }
+
+    comments, err := models.GetCommentsByPostID(postID)
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
+        RenderTemplate(w, "500", nil) // Render custom 500 page
+        return
+    }
+
+    data := struct {
+        Post     *models.Post
+        Comments []models.Comment
+    }{
+        Post:     post,
+        Comments: comments,
+    }
+
+    RenderTemplate(w, "view_post", data)
 }
+
 
 
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
@@ -181,7 +187,11 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
     like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
 
     // Logic to update the like/dislike in the database
-
+    if postID == "" || (like != "1" && like != "0") {
+        http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
+        return
+    }
+    
     log.Printf("Post %s liked: %s", postID, like)
     http.Redirect(w, r, "/viewPost?id="+postID, http.StatusSeeOther)
 }
