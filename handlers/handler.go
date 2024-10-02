@@ -193,3 +193,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     // Redirect to home page
     http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func CategoryHandler(w http.ResponseWriter, r *http.Request){
+    
+}
