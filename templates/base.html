@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}}</title>
-    <link rel="stylesheet" href="/static/base.css">
+    <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
     <header>
@@ -13,7 +13,7 @@
             {{if .IsLoggedIn}}
                 <a href="/createPost">Create Post</a>
                 <a href="/logout">Logout</a>
-                <h1 class="Username">{{.Username}}</h1>
+                <h1 class="UserID">{{.UserID}}</h1>
             {{else}}
                 <a href="/register" >Register</a>
                 

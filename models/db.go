@@ -29,6 +29,8 @@ type Post struct {
 	Title   string
 	Content string
 	Author  string
+    Category string
+
 }
 
 // Comment structure
@@ -37,6 +39,10 @@ type Comment struct {
 	Content string
 	Author  string
 }
+// type Category struct {
+// 	ID   int
+// 	Name string
+// }
 
 // Initialize the database connection
 func InitDB() {
@@ -93,7 +99,22 @@ func CreateTables() {
         FOREIGN KEY(post_id) REFERENCES posts(id),
         FOREIGN KEY(user_id) REFERENCES users(id)
     );
+    CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL
+    );
+    
+    CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        author TEXT NOT NULL,
+        category_id INTEGER,
+        FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
     `
+    
+    
 	_, err := db.Exec(query)
 	if err != nil {
 		log.Fatalf("Error creating tables: %s", err)
@@ -101,8 +122,6 @@ func CreateTables() {
 }
 
 // Create user
-
-
 
 // CreateUser adds a new user to the database
 func CreateUser(user User) error {
@@ -207,3 +226,61 @@ func GetCommentsByPostID(postID string) ([]Comment, error) {
     }
     return comments, nil
 }
+
+// var ErrCategoryExists = errors.New("category already exists")
+
+// // CreateCategory adds a new category to the database
+// func CreateCategory(name string) error {
+// 	stmt, err := db.Prepare("INSERT INTO categories (name) VALUES (?)")
+// 	if err != nil {
+// 		return fmt.Errorf("failed to prepare statement: %w", err)
+// 	}
+// 	defer stmt.Close()
+
+// 	_, err = stmt.Exec(name)
+// 	if err != nil {
+// 		if err.Error() == "UNIQUE constraint failed: categories.name" {
+// 			return ErrCategoryExists
+// 		}
+// 		return fmt.Errorf("failed to execute statement: %w", err)
+// 	}
+// 	return nil
+// }
+
+// // GetAllCategories retrieves all categories from the database
+// func GetAllCategories() ([]Category, error) {
+// 	rows, err := db.Query("SELECT id, name FROM categories")
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to fetch categories: %w", err)
+// 	}
+// 	defer rows.Close()
+
+// 	var categories []Category
+// 	for rows.Next() {
+// 		var category Category
+// 		if err := rows.Scan(&category.ID, &category.Name); err != nil {
+// 			return nil, fmt.Errorf("failed to scan category: %w", err)
+// 		}
+// 		categories = append(categories, category)
+// 	}
+// 	return categories, nil
+// }
+
+// // GetPostsByCategory retrieves all posts that belong to a specific category
+// func GetPostsByCategory(categoryID int) ([]Post, error) {
+// 	rows, err := db.Query("SELECT id, title, content, author, category_id FROM posts WHERE category_id = ?", categoryID)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to fetch posts by category: %w", err)
+// 	}
+// 	defer rows.Close()
+
+// 	var posts []Post
+// 	for rows.Next() {
+// 		var post Post
+// 		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Author, &post.CategoryID); err != nil {
+// 			return nil, fmt.Errorf("failed to scan post: %w", err)
+// 		}
+// 		posts = append(posts, post)
+// 	}
+// 	return posts, nil
+// }
