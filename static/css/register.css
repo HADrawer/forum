@@ -3,14 +3,19 @@
 *{
   font-family: 'Poppins', sans-serif; /* Aplica Poppins a todos los elementos */
 }
+body {
+  background-color: #b2acab;
+}
 
 .container {
-    margin-top: 3%;
+    margin-top: 4%;
+    margin-bottom: 4%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     text-align: center;
+    background-color: #b2acab;
   }
 
   .form_area {
@@ -24,6 +29,8 @@
     border: 2px solid #264143;
     border-radius: 20px;
     box-shadow: 3px 4px 0px 1px #E99F4C;
+    padding-left: 50px;
+    padding-right: 50px;
   }
 
   .title {
