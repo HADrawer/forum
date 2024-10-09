@@ -126,7 +126,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			user, err = models.GetUserByUserName(Email_UserName)
 		}
-
 		if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
 			return
