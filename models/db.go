@@ -157,6 +157,15 @@ func GetUserByEmail(email string) (*User, error) {
     }
     return &user, nil
 }
+func GetUserByUserName(username string) (*User, error) {
+    var user User
+    err := db.QueryRow("SELECT id, email, username, password FROM users WHERE username = ?", username).
+        Scan(&user.ID, &user.Email, &user.Username, &user.Password)
+    if err != nil {
+        return nil, errors.New("user not found")
+    }
+    return &user, nil
+}
 
 // Get all posts
 func GetAllPosts() ([]Post, error) {
