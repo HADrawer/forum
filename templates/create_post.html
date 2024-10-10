@@ -3,26 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/create_post.css">
     <title>Document</title>
 </head>
 <body>
+    <div class="post-container">
      <p>Create Post</p>
-     <form action="/create_post" method="post">
-            <div>
-
-                <div>
-                     <label for="title">Title</label>
-                    <input placeholder="Enter a Title for Post" name="title" id="title" type="text">
-                </div> 
-                <div>
-                    <label for="content">Content</label>
-                    
-                    <textarea placeholder="What do you think?" name="content" id="content"></textarea>
-                </div>
-                <div>
-                    <button type="submit">Post</button>
-                </div>
-            </div>
         </form>
+        <form action="/create_post" method="post">
+            <div class="form-group">
+                <label class="Title" for="Title">Tilte</label>
+                <input placeholder="Enter a Title for Post" name="title" id="title" type="text" class="form_style" >
+            </div>
+            <div class="form-group">
+                    <label for="content">Content</label>
+                    <textarea placeholder="What do you think?" name="content" id="content" class="form_style"></textarea>
+            </div>
+            <button type="submit">Post</button>
+        </form>
+    </div>
+    <style>
+        .post-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
 </body>
 </html>

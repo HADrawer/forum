@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+*{
+  font-family: 'Poppins', sans-serif; /* Aplica Poppins a todos los elementos */
+}
+body {
+padding: 0;
+margin: 0;
+  background-color: #b2acab;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+    margin-top: 50%;
+    margin-bottom: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    background-color: #b2acab;
+  }
+
+  .form_area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #EDDCD9;
+    height: auto;
+    width: auto;
+    border: 2px solid #264143;
+    border-radius: 20px;
+    box-shadow: 3px 4px 0px 1px #E99F4C;
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+
+  #title {
+    color: #264143;
+    font-weight: 200;
+    font-size: 1em;
+    margin-top: 20px;
+    width: 200px;
+    height: 50px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    margin: 10px;
+  }
+  #content{
+    color: #264143;
+    font-weight: 200;
+    font-size: 1.2em;
+    margin-top: 20px;
+    width: 400px;
+    height: 400px;
+  }
+  .sub_title {
+    font-weight: 600;
+    margin: 5px 0;
+  }
+
+  .form_group {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    margin: 10px;
+  }
+
+  .form_style {
+    outline: none;
+    border: 2px solid #264143;
+    box-shadow: 3px 4px 0px 1px #E99F4C;
+    width: 290px;
+    padding: 12px 10px;
+    border-radius: 4px;
+    font-size: 15px;
+    background-color: #EDDCD9;
+  }
+
+  .form_style:focus, .btn:focus {
+    transform: translateY(4px);
+    box-shadow: 1px 2px 0px 0px #E99F4C;
+  }
+
+  .btn {
+    padding: 15px;
+    margin: 25px 0px;
+    width: 290px;
+    font-size: 15px;
+    background: #DE5499;
+    border-radius: 10px;
+    font-weight: 800;
+    box-shadow: 3px 3px 0px 0px #E99F4C;
+  }
+
+  .btn:hover {
+    opacity: .9;
+  }
+
+  .link {
+    font-weight: 800;
+    color: #264143;
+    padding: 5px;
+  }
