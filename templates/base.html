@@ -11,7 +11,7 @@
     <main>
         <nav class="navbar">
             <div class="logo">Forum</div>
-            <h1 class="UserID">{{.UserID}}</h1>
+            
             <ul>
                 <li><a href="#">Home</a></li>
                 {{if .IsLoggedIn}}
@@ -24,13 +24,23 @@
                 {{end}}
             </ul>
 
+            <h1 class="UserID">{{.UserID}}</h1>
         </nav>
 
         <div class="content">
             <div class="info">
                 <h1>Welcome to the Forum</h1>
                 <p>A place where you can share your ideas</p>
-
+                <div class="sidebar">
+                    <h2>Categories</h2>
+                    <ul>
+                        <li><a href="#">Technology</a></li>
+                        <li><a href="#">Sports</a></li>
+                        <li><a href="#">Movie</a></li>
+                        <li><a href="#">Science</a></li>
+                        <li><a href="#">Health</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </main>

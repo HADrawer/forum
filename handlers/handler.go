@@ -97,9 +97,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
 			return
 		}
+
 		// Redirect to the login page or home page
 		CreateSession(w, user.Username)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		
 	}
 }
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
