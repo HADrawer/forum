@@ -3,40 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Title}}</title>
-    <link rel="stylesheet" href="/static/css/base.css">
+    <title>home</title>
+    <link rel="stylesheet" href="/static/css/home.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/">Home</a>
-            {{if .IsLoggedIn}}
-                <a href="/createPost">Create Post</a>
-                <a href="/logout">Logout</a>
-                <h1 class="UserID">{{.UserID}}</h1>
-            {{else}}
-                <a href="/register" >Register</a>
-                
-                <a href="/login">Login</a>
-            {{end}}
-        </nav>
-    </header>
-
+    
     <main>
-        <div class="sidebar">
-            <h2>Categories</h2>
-           
-        </div>
+        <nav class="navbar">
+            <div class="logo">Forum</div>
+            <h1 class="UserID">{{.UserID}}</h1>
+            <ul>
+                <li><a href="#">Home</a></li>
+                {{if .IsLoggedIn}}
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="/createPost">Create Post</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                {{else}}
+                    <li><a href="/register">Register</a></li>
+                    <li><a href="/login">Login</a></li>
+                {{end}}
+            </ul>
+
+        </nav>
 
         <div class="content">
-            {{block "content" .}} {{end}}
+            <div class="info">
+                <h1>Welcome to the Forum</h1>
+                <p>A place where you can share your ideas</p>
+
+            </div>
         </div>
-
-       
     </main>
-
-    <footer>
-        <p>&copy; 2024 Forum</p>
-    </footer>
 </body>
 </html>
+
