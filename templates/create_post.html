@@ -3,14 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/create_post.css">
     <title>Document</title>
 </head>
 <body>
+    <main>
+    <nav class="navbar">
+        <div class="logo">Forum</div>
+        
+        <ul>
+         
+            <li><a href="/"><i class="fa fa-home"></i>Home</a></li>
+             <li><a href="/logout"> <i class="fa fa-sign-out"></i>Logout</a></li>
+               {{if .IsLoggedIn}}
+                <!-- <li><a href="#">Profile</a></li> -->
+                <!-- <li><a href="/createPost">Create Post</a></li> -->
+               
+            {{else}}
+                <!--<li><a href="/login">Login</a></li>-->
+            {{end}}
+        </ul>
+
+        <h1 class="UserID">{{.UserID}}</h1>
+    </nav>
     <div class="post-container">
      <p>Create Post</p>
         </form>
-        <form action="/create_post" method="post">
+        
+        <label class="check">
+          <input type="checkbox" checked>
+          <span>Technology</span>
+        </label>
+        <label class="check">
+          <input type="checkbox">
+          <span>Sports</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox">
+          <span>Movie</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox">
+          <span>Science</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox">
+          <span>Health</span>
+        </label>
+
+        <label class="check">
+          <input type="checkbox">
+          <span>Food</span>
+        </label>
+        <form action="/create_post"  method="post">
             <div class="form-group">
                 <label class="Title" for="Title">Tilte</label>
                 <input placeholder="Enter a Title for Post" name="title" id="title" type="text" class="form_style" >
@@ -19,15 +68,14 @@
                     <label for="content">Content</label>
                     <textarea placeholder="What do you think?" name="content" id="content" class="form_style"></textarea>
             </div>
-            <button type="submit">Post</button>
+
+            
+           
+            <button class="create_postBTN" type="submit">Post</button>
         </form>
     </div>
-    <style>
-        .post-container{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-    </style>
+</main>
+    
+   
 </body>
 </html>

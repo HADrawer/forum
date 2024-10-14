@@ -9,10 +9,10 @@
 <body>
     <header>
         <nav>
-            <a href="/">Home</a>
+            <li><a href="/"><i class="fa fa-home"></i>Home</a></li>
             {{if .IsLoggedIn}}
                 <a href="/createPost">Create Post</a>
-                <a href="/logout">Logout</a>
+                <li><a href="/logout"> <i class="fa fa-sign-out"></i>Logout</a></li>
                 <h1 class="UserID">{{.UserID}}</h1>
             {{else}}
                 <a href="/register" >Register</a>
