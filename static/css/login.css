@@ -59,7 +59,7 @@ body {
     transform: translateY(4px);
     box-shadow: 1px 2px 0px 0px #E99F4C;
   }
-  /* .btn {
+  .btn {
     padding: 15px;
     margin: 25px 0px;
     width: 290px;
@@ -68,12 +68,14 @@ body {
     border-radius: 10px;
     font-weight: 800;
     box-shadow: 3px 3px 0px 0px #E99F4C;
-  } */
-  /* .btn:hover {
+  }
+
+  .btn:hover {
     opacity: .9;
-  } */
-  /* .link {
+  }
+
+  .link {
     font-weight: 800;
     color: #264143;
     padding: 5px;
-  } */
+  }
