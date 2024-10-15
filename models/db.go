@@ -78,6 +78,7 @@ func CreateTables() {
         user_id INTEGER,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
+        Catagory TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
     );
@@ -105,14 +106,6 @@ func CreateTables() {
         name TEXT UNIQUE NOT NULL
     );
     
-    CREATE TABLE IF NOT EXISTS posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        author TEXT NOT NULL,
-        category_id INTEGER,
-        FOREIGN KEY (category_id) REFERENCES categories(id)
-    );
     `
     
     
@@ -199,12 +192,12 @@ func GetPostByID(postID string) (*Post, error) {
 }
 
 // Create post
-func CreatePost(userID, title, content string) error {
-    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content) VALUES(?, ?, ?)")
+func CreatePost(userID, title, content , categories string) error {
+    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content , Catagory) VALUES(?, ?, ?,?)")
     if err != nil {
         return err
     }
-    _, err = stmt.Exec(userID, title, content)
+    _, err = stmt.Exec(userID, title, content , categories)
     return err
 }
 

@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-
+	"strings"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -135,7 +135,9 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == http.MethodPost {
 		title := r.FormValue("title")
 		content := r.FormValue("content")
-		err := models.CreatePost(userID, title, content)
+		categories := r.Form["categories[]"]
+		stringCategories := strings.Join(categories, ",")
+		err := models.CreatePost(userID, title, content , stringCategories)
 		if err != nil {
 			http.Error(w, "Unable to create post", http.StatusInternalServerError)
 			return
