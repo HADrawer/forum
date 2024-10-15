@@ -29,7 +29,7 @@
     
     {{if .IsLoggedIn}}
     <h2>Add a Comment</h2>
-    <form action="/addComment" method="post">
+    <form action="/viewPost" method="post">
         <input type="hidden" name="post_id" value="{{.Post.ID}}">
         <textarea name="comment" required></textarea><br>
         <input type="submit" value="Add Comment">

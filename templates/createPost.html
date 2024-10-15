@@ -29,7 +29,7 @@
     </nav>
     <div class="post-container">
      <p>Create Post</p>
-        </form>
+       
         
         <label class="check">
           <input type="checkbox" checked>
@@ -59,14 +59,14 @@
           <input type="checkbox">
           <span>Food</span>
         </label>
-        <form action="/create_post"  method="post">
+        <form action="/createPost"  method="post">
             <div class="form-group">
-                <label class="Title" for="Title">Tilte</label>
-                <input placeholder="Enter a Title for Post" name="title" id="title" type="text" class="form_style" >
+                <label class="title" for="title">Tilte</label>
+                <input placeholder="Enter a Title for Post" id="title" name="title"  type="text" class="form_style" required>
             </div>
             <div class="form-group">
                     <label for="content">Content</label>
-                    <textarea placeholder="What do you think?" name="content" id="content" class="form_style"></textarea>
+                    <textarea placeholder="What do you think?" id="content" name="content"  class="form_style" required></textarea>
             </div>
 
             

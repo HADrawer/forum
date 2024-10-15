@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -122,6 +123,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
+
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	userID, loggedIn := GetUserIDFromSession(r)
 	if !loggedIn {
@@ -129,7 +131,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == http.MethodGet {
-		RenderTemplate(w, "create_post", nil)
+		RenderTemplate(w, "createPost", nil)
 	} else if r.Method == http.MethodPost {
 		title := r.FormValue("title")
 		content := r.FormValue("content")

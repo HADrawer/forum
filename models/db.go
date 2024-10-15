@@ -199,7 +199,7 @@ func GetPostByID(postID string) (*Post, error) {
 
 // Create post
 func CreatePost(userID, title, content string) error {
-    stmt, err := db.Prepare("INSERT INTO posts(user_id, title, content) VALUES(?, ?, ?)")
+    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content) VALUES(?, ?, ?)")
     if err != nil {
         return err
     }
