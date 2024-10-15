@@ -59,6 +59,7 @@ func InitDB() {
 
 	// Create necessary tables
 	CreateTables()
+    CreateCategory(db)
 	log.Println("Database connected and tables created successfully")
 }
 
@@ -229,21 +230,24 @@ func GetCommentsByPostID(postID string) ([]Comment, error) {
 var ErrCategoryExists = errors.New("category already exists")
 
 // CreateCategory adds a new category to the database
-func CreateCategory(name string) error {
-	stmt, err := db.Prepare("INSERT INTO categories (name) VALUES (?)")
-	if err != nil {
-		return fmt.Errorf("failed to prepare statement: %w", err)
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(name)
-	if err != nil {
-		if err.Error() == "UNIQUE constraint failed: categories.name" {
-			return ErrCategoryExists
-		}
-		return fmt.Errorf("failed to execute statement: %w", err)
-	}
-	return nil
+func CreateCategory(database *sql.DB) {
+	statement, _ := database.Prepare("INSERT INTO categories (name) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name = ?)")
+	statement.Exec("General", "General")
+	statement.Exec("Technology", "Technology")
+	statement.Exec("Science", "Science")
+	statement.Exec("Sports", "Sports")
+	statement.Exec("Gaming", "Gaming")
+	statement.Exec("Music", "Music")
+	statement.Exec("Books", "Books")
+	statement.Exec("Movies", "Movies")
+	statement.Exec("TV", "TV")
+	statement.Exec("Food", "Food")
+	statement.Exec("Travel", "Travel")
+	statement.Exec("Photography", "Photography")
+	statement.Exec("Art", "Art")
+	statement.Exec("Writing", "Writing")
+	statement.Exec("Programming", "Programming")
+	statement.Exec("Other", "Other")
 }
 
 // GetAllCategories retrieves all categories from the database
