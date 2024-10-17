@@ -1,104 +1,148 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
 
 *{
-    margin: 0%;
-    padding: 0%;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
 
+body {
+    background-color: #b2acab;
+}
+
 main {
-    height: 100vh;
-    background-color:  #b2acab;
+    background-image: url('pink.jpg'); /* Replace with the actual image path */
+    background-size: cover; /* This ensures the image covers the entire background */
+    background-position: center; /* This centers the image */
+    background-repeat: no-repeat; /* This prevents the image from repeating */
+    background-attachment: fixed; 
+    min-height: 100vh;
+    background-color: #b2acab;
     background-size: cover;
     background-position: center;
+    padding: 20px;
 }
 
 a {
     text-decoration: none;
     color: #312f2f;
+    transition: color 0.3s ease-in-out;
+}
+
+a:hover {
+    color: #f8f3ee;
 }
 
 .navbar {
     position: fixed;
-    left: 0%;
-    top: 0%;
+    left: 0;
+    top: 0;
     width: 100%;
-    padding: 25px 100px;
+    padding: 25px 50px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     z-index: 100;
-    background-color: #EDDCD9;
+    /* background-color: #EDDCD9; */
     font-size: 20px;
     font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-
-
 .navbar ul {
-    flex:auto;
+    display: flex;
     text-align: right;
 }
 
 .navbar li {
     display: inline-block;
     list-style: none;
-    margin: 0 25px;
+    margin: 0 15px;
 }
-.navbar ul li {
-    position: relative;
-    list-style: none;
-    margin-left: 35px;
-}
-/* .navbar ul li  {
-    text-decoration: nono;
-    color: #000;
-    padding: 0 10px;
-} */
+
 .navbar ul li::after {
-    content:'';
-    width: 2px;
-    height: 100%;
-    background: #DE5499;
+    content: '';
+    width: 100%;
+    height: 2px;
     position: absolute;
-    left: 0%;
-    transform-origin:right;
-    transform: scale(0);
-    transition: transform .5s;
+    bottom: -5px;
+    background: #e09ebf;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease-in-out;
 }
- .navbar ul  li:hover::after {
-    transform: scale(1);
+
+.navbar ul li:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
 .navbar ul li a {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 500;
+    padding: 5px 0;
 }
 
-.sidebar{
-    font-size: 15px;
-}
-
-
-.navbar ul li a {
-    font-size: 20px;
-    font-weight: 500;
+.sidebar {
+    font-size: 16px;
+    padding: 15px;
+    margin-top: 20px;
 }
 
 .content {
-    display: flex;
-    align-items: center;
-    height: 100vh;
-    padding: 50px 50px 0;
+    display: block; /* Removed flexbox to stack elements naturally */
+    width: 50%; /* Set a width for the content */
+    margin: 120px auto 50px 50px; /* Aligned to the left with margin */
+    padding: 50px;
+    background-color: rgba(233, 189, 213, 0.8);
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     color: #312f2f;
-    
 }
 
 .info h1 {
     font-size: 50px;
+    text-align: left; /* Aligned text to the left */
+    color: #312f2f;
 }
 
 .info p {
-    margin: 10px 0 25px;
+    margin: 20px 0 25px;
+    font-size: 18px;
+    text-align: left; /* Aligned text to the left */
+    color: #555;
+}
+
+.button-primary {
+    background-color: #e09ebf;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: background-color 0.3s ease-in-out;
+    display: inline-block; /* Ensures the button doesn’t take up full width */
+    text-align: center; /* Centers text inside button */
+}
+
+.button-primary:hover {
+    background-color: #d45a76;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 50px;
+    /* background-color: #EDDCD9; */
+    color: #312f2f;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
