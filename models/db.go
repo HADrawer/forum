@@ -197,7 +197,8 @@ func CreatePost(userID, title, content , categories string) error {
     if err != nil {
         return err
     }
-    _, err = stmt.Exec(userID, title, content , categories)
+    user , _ := GetUserByUserName(userID)
+    _, err = stmt.Exec(user.ID , title, content , categories)
     return err
 }
 
