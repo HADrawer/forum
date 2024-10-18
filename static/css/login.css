@@ -3,8 +3,14 @@
   font-family: 'Poppins', sans-serif; /* Aplica Poppins a todos los elementos */
 }
 body {
-  background-color: #b2acab;
+  background-image: url('pink.jpg'); /* Replace with the actual image path */
+    background-size: cover; /* This ensures the image covers the entire background */
+    background-position: center; /* This centers the image */
+    background-repeat: no-repeat; /* This prevents the image from repeating */
+    background-attachment: fixed; 
+
 }
+    
 .container {
     margin-top: 7%;
     display: flex;
@@ -12,10 +18,8 @@ body {
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-color: #b2acab;
-  
-  }
-  .form_area {
+}
+.form_area {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -29,24 +33,24 @@ body {
     padding-left: 50px;
     padding-right: 50px;
     padding-bottom: 100px;
-  }
-  .title {
+}
+.title {
     color: #264143;
     font-weight: 900;
     font-size: 1.5em;
     margin-top: 20px;
-  }
-  .sub_title {
+}
+.sub_title {
     font-weight: 600;
     margin: 5px 0;
-  }
-  .form-group {
+}
+.form-group {
     display: flex;
     flex-direction: column;
     align-items: baseline;
     margin: 10px;
-  }
-  .form_style {
+}
+.form_style {
     outline: none;
     border: 2px solid #264143;
     box-shadow: 3px 4px 0px 1px #E99F4C;
@@ -54,12 +58,13 @@ body {
     padding: 12px 10px;
     border-radius: 4px;
     font-size: 15px;
-  }
-  .form_style:focus, .btn:focus {
+}
+.form_style:focus, .btn:focus {
     transform: translateY(4px);
     box-shadow: 1px 2px 0px 0px #E99F4C;
-  }
-  .btn {
+ }
+
+.btn {
     padding: 15px;
     margin: 25px 0px;
     width: 290px;
@@ -70,12 +75,12 @@ body {
     box-shadow: 3px 3px 0px 0px #E99F4C;
   }
 
-  .btn:hover {
+.btn:hover {
     opacity: .9;
-  }
+}
 
-  .link {
+.link {
     font-weight: 800;
     color: #264143;
     padding: 5px;
-  }
+}

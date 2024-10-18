@@ -31,7 +31,8 @@ a {
 }
 
 a:hover {
-    color: #f8f3ee;
+    color: 
+    #f8f3ee;
 }
 
 .navbar {
@@ -44,7 +45,6 @@ a:hover {
     justify-content: space-between;
     align-items: center;
     z-index: 100;
-    /* background-color: #EDDCD9; */
     font-size: 20px;
     font-weight: 600;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -95,7 +95,7 @@ a:hover {
     width: 50%; /* Set a width for the content */
     margin: 120px auto 50px 50px; /* Aligned to the left with margin */
     padding: 50px;
-    background-color: rgba(233, 189, 213, 0.8);
+    background-color: rgba(235, 175, 193, 0.774);
     border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     color: #312f2f;
