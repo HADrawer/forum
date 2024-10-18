@@ -281,3 +281,22 @@ func GetPostsByCategory(categoryID int) ([]Post, error) {
 	}
 	return posts, nil
 }
+// GetPostsFromUserID retrieves posts created by the user with the given userID
+func GetPostsFromUserID(userID string) ([]Post, error) {
+	var posts []Post
+	rows, err := db.Query("SELECT id, title, content FROM posts WHERE user_id = ?", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		if err := rows.Scan(&post.ID, &post.Title, &post.Content); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
