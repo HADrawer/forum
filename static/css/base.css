@@ -92,13 +92,15 @@ a:hover {
 
 .content {
     display: block; /* Removed flexbox to stack elements naturally */
-    width: 50%; /* Set a width for the content */
     margin: 120px auto 50px 50px; /* Aligned to the left with margin */
     padding: 50px;
-    background-color: rgba(235, 175, 193, 0.774);
+    background-color:rgba(245, 185, 185, 0.9);
     border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid #264143;
+    box-shadow: 3px 4px 0px 1px #E99F4C;
     color: #312f2f;
+    width: 90%; /* Responsive width */
+    max-width: 900px; /* Maximum width for larger screens */
 }
 
 .info h1 {
@@ -146,3 +148,61 @@ footer {
     text-align: center;
     box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
+
+@media screen and (max-width: 768px) {
+    .navbar {
+      padding: 20px; /* Reduce padding */
+    }
+  
+    
+    .navbar .toggle-btn {
+      display: block; /* Show the toggle (hamburger) button */
+      font-size: 24px;
+      cursor: pointer;
+      color: #312f2f;
+    }
+  
+    .navbar.active ul {
+      display: block; /* Show the menu when the navbar is active */
+      position: absolute;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.9); /* Background for the dropdown menu */
+      text-align: center;
+      padding: 20px;
+    }
+  
+    .navbar ul li {
+      display: block;
+      margin: 15px 0;
+    }
+  
+    .navbar ul li a {
+      font-size: 18px;
+      font-weight: 500;
+      color: #312f2f;
+      padding: 10px;
+      display: block;
+      text-align: center;
+    }
+  }
+@media screen and (max-width: 480px) {
+    .content {
+      width: 100%;
+      padding: 15px;
+    }
+  
+    .info h1 {
+      font-size: 28px;
+    }
+  
+    .info p {
+      font-size: 14px;
+    }
+  
+    .button-primary {
+      font-size: 14px;
+      padding: 6px 12px;
+    }
+  }

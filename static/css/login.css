@@ -33,6 +33,7 @@ body {
     padding-left: 50px;
     padding-right: 50px;
     padding-bottom: 100px;
+    max-width: 500px; /* Limits width for larger screens */
 }
 .title {
     color: #264143;
@@ -84,3 +85,35 @@ body {
     color: #264143;
     padding: 5px;
 }
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .form_area {
+      width: 95%;
+      padding: 20px;
+    }
+  
+    .title {
+      font-size: 1.3em;
+    }
+  
+    .btn {
+      font-size: 14px;
+      padding: 12px;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .form_area {
+      width: 100%;
+      padding: 15px;
+    }
+  
+    .title {
+      font-size: 1.2em;
+    }
+  
+    .btn {
+      font-size: 12px;
+      padding: 10px;
+    }
+  }

@@ -10,14 +10,14 @@
 body {
    padding: 0;
    margin: 0;
-   background-image: url(pink.jpg);
+   background-image: url('pink.jpg');
    background-size: cover;
    background-position: center;
    background-repeat: no-repeat;
    display: flex;
    justify-content: center;
-   align-items: center;
-   height: 100vh;
+   min-height: 100vh;
+   flex-direction: column;
 }
 
 .navbar {
@@ -28,10 +28,25 @@ body {
     padding: 20px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.3);
+    align-items: center; 
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.logo {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f0f0f;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+.logo:hover {
+    background-color: #DE5499;
+    color: #0e0d0d;
+    border: 2px solid #264143;
 }
 
 .navbar ul {
@@ -47,34 +62,41 @@ body {
 .navbar ul li a {
     font-size: 18px;
     font-weight: 600;
-    color: #ffffff;
+    color: #131212;
     text-decoration: none;
     padding: 8px 15px;
     border-radius: 5px;
 }
 
 .navbar ul li a:hover {
-    background-color: #ffffff;
-    color: #ff5e78;
+    background-color: #DE5499;
+    color: #0e0d0d;
+    border: 2px solid #264143;
 }
 
 .post-container {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(245, 185, 185, 0.9);
     border-radius: 10px;
     padding: 40px;
-    width: 800px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 90%; /* Adjusted width to 90% for smaller screens */
+    max-width: 800px; /* Limits the width on larger screens */
+    box-shadow: 3px 4px 0px 1px #E99F4C;
+    border: 2px solid #264143;
+    margin-top: 150px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 h2 {
     font-size: 36px;
     text-align: center;
-    color: #ff5e78;
+    color: #131112;
     margin-bottom: 20px;
 }
 
 .form-group {
     margin-bottom: 20px;
+    font-size: 20px;
 }
 
 .form_style {
@@ -82,9 +104,10 @@ h2 {
     padding: 15px;
     margin-top: 8px;
     border-radius: 8px;
-    border: 2px solid #ff5e78;
+    border: 2px solid #264143;
     font-size: 16px;
     background-color: #fce4ec;
+    box-shadow: 3px 4px 0px 1px #E99F4C;
 }
 
 textarea.form_style {
@@ -97,16 +120,16 @@ textarea.form_style {
     width: 100%;
     padding: 15px;
     font-size: 18px;
-    background-color: #ff5e78;
-    color: white;
-    border: none;
+    background: #DE5499;
+    color: rgb(22, 21, 21);
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
+    box-shadow: 3px 3px 0px 0px #E99F4C;
 }
 
 .btn:hover {
-    background-color: #ff8a92;
+    opacity: .9;
 }
 
 label.check {
@@ -124,11 +147,69 @@ label.check span {
     padding: 10px 20px;
     border-radius: 30px;
     background-color: #ff8a92;
-    color: white;
+    color: rgb(14, 13, 13);
     font-size: 14px;
+    box-shadow: 3px 3px 0px 0px #E99F4C;
+    border-radius: 10px;
+    border: 2px solid #264143;
 }
 
 label.check input:checked + span {
-    background-color: #ff5e78;
-    color: white;
+    background-color: #DE5499;
+    color: rgb(20, 20, 20);
+    border-radius: 10px;
+}
+
+/* Responsive Media Queries */
+@media screen and (max-width: 768px) {
+    .post-container {
+        width: 95%; /* Increase width to fit smaller screens */
+        padding: 20px; /* Reduce padding for smaller screens */
+    }
+
+    .navbar ul li a {
+        font-size: 16px; /* Reduce font size for smaller screens */
+    }
+
+    h2 {
+        font-size: 28px; /* Reduce header size */
+    }
+
+    .form_style {
+        font-size: 14px; /* Adjust form font size */
+    }
+
+    .btn {
+        font-size: 16px; /* Adjust button font size */
+    }
+
+    label.check span {
+        padding: 8px 15px; /* Adjust padding for checkbox labels */
+        font-size: 12px; /* Adjust font size for checkbox labels */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .post-container {
+        width: 100%; /* Full width on very small screens */
+        padding: 15px; /* Reduce padding for mobile */
+    }
+
+    h2 {
+        font-size: 24px; /* Smaller header size */
+    }
+
+    .form_style {
+        font-size: 12px; /* Adjust form font size for smaller devices */
+    }
+
+    .btn {
+        font-size: 14px; /* Adjust button font size */
+        padding: 12px; /* Adjust button padding */
+    }
+
+    label.check span {
+        padding: 6px 10px; /* Adjust padding for smaller checkbox labels */
+        font-size: 10px; /* Adjust font size for smaller screens */
+    }
 }
