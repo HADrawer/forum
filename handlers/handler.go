@@ -6,22 +6,23 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
 	"golang.org/x/crypto/bcrypt"
 )
-type Post struct {
-	ID        string
-	Title     string
-	Content   string
-	Categories string
-}
+
+
+
 var templates = template.Must(template.ParseGlob("templates/*.html"))
+
 // renderTemplate helper function
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}
 }
+
 // BaseHandler serves pages with the base layout (base.html)
 func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, data interface{}) {
 	userID, isLoggedIn := GetUserIDFromSession(r)
@@ -33,6 +34,7 @@ func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, da
 	// Render the template with base.html as the layout
 	err := templates.ExecuteTemplate(w, templateName+".html", pageData)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}
 }
@@ -40,6 +42,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	userID, isLoggedIn := GetUserIDFromSession(r)
 	posts, err := models.GetAllPosts()
 	if err != nil {
+		log.Print(err)
 		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
 		return
 	}
@@ -55,7 +58,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		Posts:      posts,
 	}
 	BaseHandler(w, r, "base", data)
-	
+
 }
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -108,7 +111,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		// Redirect to the login page or home page
 		CreateSession(w, user.Username)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-		
+
 	}
 }
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +151,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 		stringCategories := strings.Join(categories, ",")
 
-		err := models.CreatePost(userID, title, content , stringCategories)
+		err := models.CreatePost(userID, title, content, stringCategories)
 		if err != nil {
 			http.Error(w, "Unable to create post", http.StatusInternalServerError)
 			return
@@ -156,7 +159,6 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
-
 
 func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, loggedIn := GetUserIDFromSession(r)
@@ -184,30 +186,53 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 	RenderTemplate(w, "myposts", data) // Ensure this matches your HTML filename
 }
 
-
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
-	postID := r.URL.Query().Get("id")
-	post, err := models.GetPostByID(postID)
+	_, isLoggedIn := GetUserIDFromSession(r)
+	
+	posts, err := models.GetAllPosts()
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
 		return
 	}
-	comments, err := models.GetCommentsByPostID(postID)
+	// comments, err := models.GetCommentsByPostID(postID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
 		RenderTemplate(w, "500", nil)                 // Render custom 500 page
 		return
 	}
-	data := struct {
-		Post     *models.Post
-		Comments []models.Comment
-	}{
-		Post:     post,
-		Comments: comments,
+	// data := struct {
+	// 	Post  []models.Post
+	// 	// Comments []models.Comment
+	// }{
+	// 	Post: post,
+	// 	// Comments: comments,
+	// }
+	// Prepare data for the template
+	pageData := make(map[string]interface{})
+	
+
+	// Create a slice to hold the post details for the template
+	var postDetails []map[string]interface{}
+	for _, post := range posts {
+		postDetail := map[string]interface{}{
+			"IsLoggedIn": isLoggedIn,
+			"Author":  post.Author,
+			"Title":   post.Title,
+			"Content": post.Content,
+		}
+		postDetails = append(postDetails, postDetail)
 	}
-	RenderTemplate(w, "view_post", data)
+	pageData["Posts"] = postDetails
+
+	err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
+	if err1 != nil {
+		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
+	}
 }
+
+
+
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Query().Get("post_id")
 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike

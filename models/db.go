@@ -26,10 +26,12 @@ type User struct {
 // Post structure
 type Post struct {
 	ID      int
+    userID  int
 	Title   string
 	Content string
 	Author  string
     Category []Category
+    created_at string
 
 }
 
@@ -78,6 +80,7 @@ func CreateTables() {
         user_id INTEGER,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
+        Author Text NOT NULL,
         Catagory TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
@@ -164,7 +167,7 @@ func GetUserByUserName(username string) (*User, error) {
 // Get all posts
 func GetAllPosts() ([]Post, error) {
     var posts []Post
-    rows, err := db.Query("SELECT id, title, content FROM posts")
+    rows, err := db.Query("SELECT id, user_id, title, content, Author   FROM posts")
     if err != nil {
         return nil, err
     }
@@ -172,7 +175,7 @@ func GetAllPosts() ([]Post, error) {
 
     for rows.Next() {
         var post Post
-        if err := rows.Scan(&post.ID, &post.Title, &post.Content); err != nil {
+        if err := rows.Scan(&post.ID, &post.userID, &post.Title, &post.Content, &post.Author); err != nil {
             return nil, err
         }
         posts = append(posts, post)
@@ -193,12 +196,12 @@ func GetPostByID(postID string) (*Post, error) {
 
 // Create post
 func CreatePost(userID, title, content , categories string) error {
-    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content , Catagory) VALUES(?, ?, ?,?)")
+    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content ,Author, Catagory) VALUES(?, ?, ?,?,?)")
     if err != nil {
         return err
     }
     user , _ := GetUserByUserName(userID)
-    _, err = stmt.Exec(user.ID , title, content , categories)
+    _, err = stmt.Exec(user.ID , title, content, user.Username , categories)
     return err
 }
 
