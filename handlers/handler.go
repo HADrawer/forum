@@ -8,13 +8,18 @@ import (
 	"strings"
 	"golang.org/x/crypto/bcrypt"
 )
-
+type Post struct {
+	ID        string
+	Title     string
+	Content   string
+	Categories string
+}
 var templates = template.Must(template.ParseGlob("templates/*.html"))
 // renderTemplate helper function
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
-		http.Error(w, "Unable to load template", http.StatusInternalServerError)
+		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}
 }
 // BaseHandler serves pages with the base layout (base.html)
@@ -28,7 +33,7 @@ func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, da
 	// Render the template with base.html as the layout
 	err := templates.ExecuteTemplate(w, templateName+".html", pageData)
 	if err != nil {
-		http.Error(w, "Unable to render page", http.StatusInternalServerError)
+		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}
 }
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -134,10 +139,15 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		RenderTemplate(w, "createPost", nil)
 	} else if r.Method == http.MethodPost {
+
 		title := r.FormValue("title")
+
 		content := r.FormValue("content")
+
 		categories := r.Form["categories[]"]
+
 		stringCategories := strings.Join(categories, ",")
+
 		err := models.CreatePost(userID, title, content , stringCategories)
 		if err != nil {
 			http.Error(w, "Unable to create post", http.StatusInternalServerError)
@@ -146,28 +156,57 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
+
+
+func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, loggedIn := GetUserIDFromSession(r)
+	if !loggedIn {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	// Get posts for the logged-in user
+	posts, err := models.GetPostsFromUserID(userID)
+	if err != nil {
+		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
+		return
+	}
+
+	// Render the template with posts
+	data := struct {
+		Title string
+		Posts []models.Post
+	}{
+		Title: "My Created Posts",
+		Posts: posts,
+	}
+
+	RenderTemplate(w, "myposts", data) // Ensure this matches your HTML filename
+}
+
+
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
-    
-    post, err := models.GetAllPosts()
-    if err != nil {
-        w.WriteHeader(http.StatusNotFound) // Set the 404 status code
-        RenderTemplate(w, "404", nil)      // Render custom 404 page
-        return
-    }
-    // comments, err := models.GetCommentsByPostID(postID)
-    // if err != nil {
-    //     w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
-    //     RenderTemplate(w, "500", nil)                 // Render custom 500 page
-    //     return
-    // }
-    data := struct {
-        Post     []models.Post
-        // Comments []models.Comment
-    }{
-        Post:     post,
-        // Comments: comments,
-    }
-    RenderTemplate(w,"viewPost", data)
+	postID := r.URL.Query().Get("id")
+	post, err := models.GetPostByID(postID)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
+		RenderTemplate(w, "404", nil)      // Render custom 404 page
+		return
+	}
+	comments, err := models.GetCommentsByPostID(postID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
+		RenderTemplate(w, "500", nil)                 // Render custom 500 page
+		return
+	}
+	data := struct {
+		Post     *models.Post
+		Comments []models.Comment
+	}{
+		Post:     post,
+		Comments: comments,
+	}
+	RenderTemplate(w, "view_post", data)
 }
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Query().Get("post_id")
@@ -188,4 +227,3 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 func CategoryHandler(w http.ResponseWriter, r *http.Request) {
 }
-
