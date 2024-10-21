@@ -20,7 +20,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 // BaseHandler serves pages with the base layout (base.html)
 func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, data interface{}) {
 	userID, isLoggedIn := GetUserIDFromSession(r)
-	templateName = "base"
+	// templateName = "base"
 	pageData := make(map[string]interface{})
 	// Common data across all templates using base.html
 	pageData["IsLoggedIn"] = isLoggedIn
@@ -49,7 +49,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		UserID:     userID,
 		Posts:      posts,
 	}
-	BaseHandler(w, r, "home", data)
+	BaseHandler(w, r, "base", data)
+	
 }
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
@@ -146,27 +147,27 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
-	postID := r.URL.Query().Get("id")
-	post, err := models.GetPostByID(postID)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
-		RenderTemplate(w, "404", nil)      // Render custom 404 page
-		return
-	}
-	comments, err := models.GetCommentsByPostID(postID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
-		RenderTemplate(w, "500", nil)                 // Render custom 500 page
-		return
-	}
-	data := struct {
-		Post     *models.Post
-		Comments []models.Comment
-	}{
-		Post:     post,
-		Comments: comments,
-	}
-	RenderTemplate(w, "view_post", data)
+    
+    post, err := models.GetAllPosts()
+    if err != nil {
+        w.WriteHeader(http.StatusNotFound) // Set the 404 status code
+        RenderTemplate(w, "404", nil)      // Render custom 404 page
+        return
+    }
+    // comments, err := models.GetCommentsByPostID(postID)
+    // if err != nil {
+    //     w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
+    //     RenderTemplate(w, "500", nil)                 // Render custom 500 page
+    //     return
+    // }
+    data := struct {
+        Post     []models.Post
+        // Comments []models.Comment
+    }{
+        Post:     post,
+        // Comments: comments,
+    }
+    RenderTemplate(w,"viewPost", data)
 }
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Query().Get("post_id")

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>{{.Post.Title}}</title>
 </head>
 <body>
-    {{define "content"}}
     <h1>{{.Post.Title}}</h1>
     <p>{{.Post.Content}}</p>
     <p>Author: {{.Post.Author}}</p>
@@ -17,9 +16,9 @@
     <a href="/like?post_id={{.Post.ID}}&like=0">Dislike</a>
     
     <h2>Comments</h2>
-    {{if .Post.Comments}}
+    {{if .Comments}}
         <ul>
-        {{range .Post.Comments}}
+        {{range .Comments}}
             <li>{{.Author}}: {{.Content}}</li>
         {{end}}
         </ul>
@@ -35,10 +34,5 @@
         <input type="submit" value="Add Comment">
     </form>
     {{end}}
-    
-    
-    
-{{end}}
-
 </body>
 </html>

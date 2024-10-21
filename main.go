@@ -2,11 +2,11 @@ package main
 import (
 	"Forum/handlers"
 	"Forum/models"
-	"html/template"
+	// "html/template"
 	"log"
 	"net/http"
 )
-var templates *template.Template
+// var templates *template.Template
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
     handlers.RenderTemplate(w, "register", nil)
 }
@@ -21,6 +21,7 @@ func main() {
 	
     // Routes
     http.HandleFunc("/", handlers.HomeHandler)
+    http.HandleFunc("/home", handlers.HomeHandler)
     http.HandleFunc("/register", handlers.RegisterHandler)
     http.HandleFunc("/login", handlers.LoginHandler)
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {

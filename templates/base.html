@@ -15,13 +15,18 @@
             <a href="/" class="logo"><i ></i> Fourm</a>
             
             <ul>
-                <li><a href="/"><i class="fa fa-home"></i> Home</a></li>
+                <li><a href="home"><i class="fa fa-home"></i> Home</a></li>
+                
                 {{if .IsLoggedIn}}
+                    <li><a href="/viewPost">View posts</a></li>
                     <li><a href="/createPost">Create Post</a></li>
                     <li><a href="/logout"> <i class="fa fa-sign-out"></i> Logout</a></li>
+                   
                 {{else}}
+
                     <li><a href="/register">Register</a></li>
                     <li><a href="/login">Login</a></li>
+                    
                 {{end}}
             </ul>
             <h1 class="UserID">{{.UserID}}</h1>

@@ -221,6 +221,8 @@ func GetCommentsByPostID(postID string) ([]Comment, error) {
     return comments, nil
 }
 
+
+
 var ErrCategoryExists = errors.New("category already exists")
 
 // CreateCategory adds a new category to the database
