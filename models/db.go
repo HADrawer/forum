@@ -182,6 +182,23 @@ func GetAllPosts() ([]Post, error) {
     }
     return posts, nil
 }
+func GetAllCatagoryPosts(Catagory string)([]Post,error){
+    var posts []Post
+    rows, err := db.Query("SELECT id, user_id, title, content, Author, Catagory FROM posts WHERE Catagory = ?", Catagory)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    for rows.Next() {
+        var post Post
+        if err := rows.Scan(&post.ID, &post.userID, &post.Title, &post.Content, &post.Author , &post.Category); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+    return posts, nil
+}
 
 // Get post by ID
 func GetPostByID(postID string) (*Post, error) {
