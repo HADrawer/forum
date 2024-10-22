@@ -6,7 +6,7 @@
     <title>All Posts</title>
 </head>
 <body>
-    
+    {{if .isExist}}
     {{range .Posts}}
         <h1>{{.Title}}</h1>
         <p>Content: {{.Content}}</p>
@@ -37,6 +37,10 @@
             {{end}}
     
         
+    {{end}}
+    {{else}}
+    <h1>There is No posts</h1>
+    <h3>Came Later</h3>
     {{end}}
 </body>
 </html>

@@ -193,7 +193,7 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 	
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		_, isLoggedIn := GetUserIDFromSession(r)
-		
+		isExist := true
 		posts, err := models.GetAllPosts()
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
@@ -206,14 +206,9 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		RenderTemplate(w, "500", nil)                 // Render custom 500 page
 		return
 	}
-	// data := struct {
-		// 	Post  []models.Post
-		// 	// Comments []models.Comment
-		// }{
-			// 	Post: post,
-			// 	// Comments: comments,
-			// }
-			// Prepare data for the template
+	if posts == nil {
+		isExist = false
+	}
 			pageData := make(map[string]interface{})
 			
 			
@@ -229,7 +224,8 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 				postDetails = append(postDetails, postDetail)
 			}
 			pageData["Posts"] = postDetails
-			
+			pageData["isExist"] = isExist
+
 			err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
 			if err1 != nil {
 				http.Error(w, "Internal server error 500", http.StatusInternalServerError)
@@ -241,7 +237,7 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	_, isLoggedIn := GetUserIDFromSession(r)
 	Catagory := r.FormValue("Catagory")
-
+	isExist := true
 	posts, err := models.GetAllCategoryPosts(Catagory)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
@@ -254,17 +250,12 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 		RenderTemplate(w, "500", nil)                 // Render custom 500 page
 		return
 	}
-	// data := struct {
-	// 	Post  []models.Post
-	// 	// Comments []models.Comment
-	// }{
-	// 	Post: post,
-	// 	// Comments: comments,
-	// }
-	// Prepare data for the template
+	
 	pageData := make(map[string]interface{})
 	
-
+	if posts == nil {
+		isExist = false
+	}
 	// Create a slice to hold the post details for the template
 	var postDetails []map[string]interface{}
 	for _, post := range posts {
@@ -277,6 +268,8 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 		postDetails = append(postDetails, postDetail)
 	}
 	pageData["Posts"] = postDetails
+	pageData["isExist"] = isExist
+	pageData["CateName"] = Catagory
 
 	err1 := templates.ExecuteTemplate(w, "CatagoryViwer.html", pageData)
 	if err1 != nil {

@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Posts</title>
+    <title>{{.CateName}} Posts</title>
 </head>
 <body>
-    
+    {{if .isExist}}
+
     {{range .Posts}}
         <h1>{{.Title}}</h1>
         <p>Content: {{.Content}}</p>
@@ -37,6 +38,9 @@
             {{end}}
     
         
+    {{end}}
+    {{else}}
+    <h1>This Catagory is Empty</h1>
     {{end}}
 </body>
 </html>
