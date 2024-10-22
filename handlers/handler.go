@@ -136,43 +136,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
-func CatagoryHandler(w http.ResponseWriter, r *http.Request ,) {
-	_, isLoggedIn := GetUserIDFromSession(r)
-	Catagory := r.FormValue("Catagory")
-	posts, err := models.GetAllCatagoryPosts(Catagory)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
-		RenderTemplate(w, "404", nil)      // Render custom 404 page
-		return
-	}
-	// comments, err := models.GetCommentsByPostID(postID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
-		RenderTemplate(w, "500", nil)                 // Render custom 500 page
-		return
-	}
-	
-	pageData := make(map[string]interface{})
-	
 
-	// Create a slice to hold the post details for the template
-	var postDetails []map[string]interface{}
-	for _, post := range posts {
-		postDetail := map[string]interface{}{
-			"IsLoggedIn": isLoggedIn,
-			"Author":  post.Author,
-			"Title":   post.Title,
-			"Content": post.Content,
-		}
-		postDetails = append(postDetails, postDetail)
-	}
-	pageData["Posts"] = postDetails
-
-	err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
-	if err1 != nil {
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
-	}
-}
 
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	userID, loggedIn := GetUserIDFromSession(r)
@@ -183,15 +147,15 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		RenderTemplate(w, "createPost", nil)
 	} else if r.Method == http.MethodPost {
-
+		
 		title := r.FormValue("title")
-
+		
 		content := r.FormValue("content")
-
+		
 		categories := r.Form["categories[]"]
-
+		
 		stringCategories := strings.Join(categories, ",")
-
+		
 		err := models.CreatePost(userID, title, content, stringCategories)
 		if err != nil {
 			http.Error(w, "Unable to create post", http.StatusInternalServerError)
@@ -207,30 +171,78 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-
+	
 	// Get posts for the logged-in user
 	posts, err := models.GetPostsFromUserID(userID)
 	if err != nil {
 		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
 		return
 	}
-
+	
 	// Render the template with posts
 	data := struct {
 		Title string
 		Posts []models.Post
-	}{
-		Title: "My Created Posts",
-		Posts: posts,
+		}{
+			Title: "My Created Posts",
+			Posts: posts,
+		}
+		
+		RenderTemplate(w, "myposts", data) // Ensure this matches your HTML filename
 	}
-
-	RenderTemplate(w, "myposts", data) // Ensure this matches your HTML filename
+	
+func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
+		_, isLoggedIn := GetUserIDFromSession(r)
+		
+		posts, err := models.GetAllPosts()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
+		RenderTemplate(w, "404", nil)      // Render custom 404 page
+		return
+	}
+	// comments, err := models.GetCommentsByPostID(postID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError) // Set the 500 status code
+		RenderTemplate(w, "500", nil)                 // Render custom 500 page
+		return
+	}
+	// data := struct {
+		// 	Post  []models.Post
+		// 	// Comments []models.Comment
+		// }{
+			// 	Post: post,
+			// 	// Comments: comments,
+			// }
+			// Prepare data for the template
+			pageData := make(map[string]interface{})
+			
+			
+			// Create a slice to hold the post details for the template
+			var postDetails []map[string]interface{}
+			for _, post := range posts {
+				postDetail := map[string]interface{}{
+					"IsLoggedIn": isLoggedIn,
+					"Author":  post.Author,
+					"Title":   post.Title,
+					"Content": post.Content,
+				}
+				postDetails = append(postDetails, postDetail)
+			}
+			pageData["Posts"] = postDetails
+			
+			err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
+			if err1 != nil {
+				http.Error(w, "Internal server error 500", http.StatusInternalServerError)
+			}
 }
 
-func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
+
+
+func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	_, isLoggedIn := GetUserIDFromSession(r)
-	
-	posts, err := models.GetAllPosts()
+	Catagory := r.FormValue("Catagory")
+
+	posts, err := models.GetAllCategoryPosts(Catagory)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
@@ -266,13 +278,11 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	pageData["Posts"] = postDetails
 
-	err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
+	err1 := templates.ExecuteTemplate(w, "CatagoryViwer.html", pageData)
 	if err1 != nil {
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}
 }
-
-
 
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Query().Get("post_id")

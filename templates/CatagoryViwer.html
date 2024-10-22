@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Posts</title>
+</head>
+<body>
+    
+    {{range .Posts}}
+        <h1>{{.Title}}</h1>
+        <p>Content: {{.Content}}</p>
+        <p>Author: {{.Author}}</p>
+    
+        <p>Likes: {{.Post.Likes}} | Dislikes: {{.Post.Dislikes}}</p>
+    
+        <a href="/like?post_id={{.Post.ID}}&like=1">Like</a>
+        <a href="/like?post_id={{.Post.ID}}&like=0">Dislike</a>
+    
+            {{if .IsLoggedIn}}
+                <h2>Add a Comment</h2>
+                <form action="/CatagoryViwer" method="post">
+                    <input type="hidden" name="post_id" value="{{.ID}}">
+                    <textarea name="comment" required></textarea><br>
+                    <input type="submit" value="Add Comment">
+                </form>
+            {{end}}
+            <h2>Comments</h2>
+            {{if .Comments}}
+                <ul>
+                {{range .Comments}}
+                    <li>{{.Author}}: {{.Content}}</li>
+                {{end}}
+                </ul>
+            {{else}}
+                <p>No comments yet.</p>
+            {{end}}
+    
+        
+    {{end}}
+</body>
+</html>
