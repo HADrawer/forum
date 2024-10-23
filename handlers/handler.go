@@ -32,11 +32,24 @@ func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, da
 	pageData["IsLoggedIn"] = isLoggedIn
 	pageData["UserID"] = userID	
 	
-
+	Catagories, err := models.GetAllCategories()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
+		RenderTemplate(w, "404", nil)      // Render custom 404 page
+		return
+	}
+	var postDetails []map[string]interface{}
+	for _, Catagory := range Catagories {
+		postDetail := map[string]interface{}{
+			"Catagory": Catagory.Name,
+		}
+		postDetails = append(postDetails, postDetail)
+	}
+	pageData["Catagories"] = postDetails
 
 	// Render the template with base.html as the layout
-	err := templates.ExecuteTemplate(w, templateName+".html", pageData)
-	if err != nil {
+	err1 := templates.ExecuteTemplate(w, templateName+".html", pageData)
+	if err1 != nil {
 		log.Print(err)
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}

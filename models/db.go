@@ -182,6 +182,7 @@ func GetAllPosts() ([]Post, error) {
     }
     return posts, nil
 }
+
 func GetAllCategoryPosts(isCategory string) ([]Post, error) {
     var posts []Post
     query := "SELECT id, user_id, title, content, Author FROM posts WHERE Catagory LIKE ?"
