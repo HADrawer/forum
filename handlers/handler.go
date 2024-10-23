@@ -209,9 +209,9 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		isExist := true
 		id := r.URL.Query().Get("id")
 		
-	post, err := models.GetPostByID(id)
+	post, err0 := models.GetPostByID(id)
 	Comments , err := models.GetCommentsByPostID(id)
-	if err != nil {
+	if err0 != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
 		return
@@ -233,6 +233,8 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 			"Author":  comment.Author,
 			"comment":   comment.Content,
 			"created_at":comment.Created_at,
+			"PostUserID": post.UserID,
+			"CommentUserID": comment.User_ID,
 			
 		}
 		CommentDetails = append(CommentDetails, CommentDetail)
@@ -245,6 +247,8 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	pageData["IsLoggedIn"]= isLoggedIn
 	pageData["isExist"] = isExist
 	pageData["Comments"] = CommentDetails
+
+
 			err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
 			if err1 != nil {
 				http.Error(w, "Internal server error 500", http.StatusInternalServerError)

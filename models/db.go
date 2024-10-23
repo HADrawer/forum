@@ -26,7 +26,7 @@ type User struct {
 // Post structure
 type Post struct {
 	ID      int
-    userID  int
+    UserID  int
 	Title   string
 	Content string
 	Author  string
@@ -179,7 +179,7 @@ func GetAllPosts() ([]Post, error) {
     for rows.Next() {
         var post Post
         var createdAt time.Time
-        if err := rows.Scan(&post.ID, &post.userID,&post.Title,&post.Content,&post.Author, &createdAt); err != nil {
+        if err := rows.Scan(&post.ID, &post.UserID,&post.Title,&post.Content,&post.Author, &createdAt); err != nil {
             return nil, err
         }
         post.Created_at = createdAt.Format("2006-01-02 15:04:05")
@@ -203,7 +203,7 @@ func GetAllCategoryPosts(isCategory string) ([]Post, error) {
     for rows.Next() {
         var post Post
         var createdAt time.Time
-        if err := rows.Scan(&post.ID, &post.userID,&post.Title,&post.Content,&post.Author,&createdAt); err != nil {
+        if err := rows.Scan(&post.ID, &post.UserID,&post.Title,&post.Content,&post.Author,&createdAt); err != nil {
             log.Print(err)
             return nil, err
         }
@@ -220,7 +220,7 @@ func GetPostByID(postID string) (*Post, error) {
     var post Post
     var createdAt time.Time
     err := db.QueryRow("SELECT id ,user_id, title, content ,Author , created_at FROM posts WHERE id = ?", postID).
-        Scan(&post.ID, &post.userID,&post.Title,&post.Content,&post.Author, &createdAt)
+        Scan(&post.ID, &post.UserID,&post.Title,&post.Content,&post.Author, &createdAt)
     if err != nil {
         return nil, errors.New("post not found")
     }

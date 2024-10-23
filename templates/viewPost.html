@@ -63,8 +63,10 @@
             {{if .Comments}}
                 <ul>
                 {{range .Comments}}
-                    <h3>{{.Author}}</h3> <h6>{{.created_at}}</h6>
-                    <h5>{{.comment}}</h5>
+                <h3>{{.Author}}</h3> 
+        
+                <h5>{{.comment}}</h5>
+                <h6>{{.created_at}}</h6>
                 {{end}}
                 </ul>
             {{else}}
