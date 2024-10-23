@@ -356,7 +356,7 @@ func UpdateLike(postID, userID, Liked string) {
 func IsLike(postID, userID string) bool {
 	user, _ := GetUserByUserName(userID)
 
-	rows, _ := db.Query("SELECT is_like FROM likes WHERE user_id = ? AND post_id = ? AND is_like = 1", user, postID)
+	rows, _ := db.Query("SELECT is_like FROM likes WHERE user_id = ? AND post_id = ? AND is_like = 1", user.ID, postID)
 	like := 0
 	for rows.Next() {
 		rows.Scan(&like)
@@ -369,7 +369,7 @@ func IsLike(postID, userID string) bool {
 func IsDisLike(postID, userID string) bool {
 	user, _ := GetUserByUserName(userID)
 
-	rows, _ := db.Query("SELECT is_like FROM likes WHERE user_id = ? AND post_id = ? AND is_like = -1", user, postID)
+	rows, _ := db.Query("SELECT is_like FROM likes WHERE user_id = ? AND post_id = ? AND is_like = -1", user.ID, postID)
 	like := 0
 	for rows.Next() {
 		rows.Scan(&like)
@@ -390,10 +390,10 @@ func DecraseLike(postID string) {
 }
 
 func IncreaseDisLike(postID string) {
-	stat, _ := db.Prepare("UPDATE posts SET likes = Dislikes + 1 WHERE id = ?")
+	stat, _ := db.Prepare("UPDATE posts SET Dislikes = Dislikes + 1 WHERE id = ?")
 	stat.Exec(postID)
 }
 func DecraseDisLike(postID  string) {
-	stat, _ := db.Prepare("UPDATE posts SET likes = Dislikes - 1 WHERE id = ?")
+	stat, _ := db.Prepare("UPDATE posts SET Dislikes = Dislikes - 1 WHERE id = ?")
 	stat.Exec(postID)
 }

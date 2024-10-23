@@ -312,8 +312,7 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 			models.IncreaseLike(postID)
 			models.AddLike(postID,userID,"1")
 		}
-	}
-	if like == "-1"{
+	} else if like == "-1"{
 		if models.IsDisLike(postID,userID){
 			models.RemoveLike(postID,userID)
 			models.DecraseDisLike(postID)
@@ -327,12 +326,12 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 			
 
 		}else {
-			models.IncreaseLike(postID)
-			models.AddLike(postID,userID,"1")
+			models.IncreaseDisLike(postID)
+			models.AddLike(postID,userID,"-1")
 		}
 	}
 
-	log.Printf("Post %s liked: %s", postID, like)
+	
 	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
 }
 
