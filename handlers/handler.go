@@ -210,7 +210,7 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 		
 	post, err := models.GetPostByID(id)
-	
+	Comments , err := models.GetCommentsByPostID(id)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
@@ -223,14 +223,28 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-			pageData := make(map[string]interface{})
-				
-			pageData["Author"]= post.Author
-			pageData["Title"]= post.Title
-			pageData["Content"]= post.Content
-			pageData["IsLoggedIn"]= isLoggedIn
-			pageData["isExist"] = isExist
-
+	
+	var CommentDetails []map[string]interface{}
+	
+	for _, comment := range Comments {
+		
+		CommentDetail := map[string]interface{}{
+			
+			"Author":  comment.Author,
+			"comment":   comment.Content,
+			"created_at":comment.Created_at,
+			
+		}
+		CommentDetails = append(CommentDetails, CommentDetail)
+	}
+	pageData := make(map[string]interface{})
+	pageData["id"] = post.ID
+	pageData["Author"]= post.Author
+	pageData["Title"]= post.Title
+	pageData["Content"]= post.Content
+	pageData["IsLoggedIn"]= isLoggedIn
+	pageData["isExist"] = isExist
+	pageData["Comments"] = CommentDetails
 			err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
 			if err1 != nil {
 				http.Error(w, "Internal server error 500", http.StatusInternalServerError)
@@ -305,5 +319,19 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Redirect to home page
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
-func CategoryHandler(w http.ResponseWriter, r *http.Request) {
+
+
+func CommentHandler(w http.ResponseWriter, r *http.Request){
+	userID, _ := GetUserIDFromSession(r)
+
+	postId := r.FormValue("PostID")
+	Comment := r.FormValue("PostComment")
+
+	err := models.CreateComment(userID,postId,Comment)
+	if err != nil {
+		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
+	}
+
+
+	http.Redirect(w, r, "/Post?id="+postId, http.StatusFound)
 }

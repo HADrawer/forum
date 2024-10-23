@@ -39,7 +39,9 @@ type Post struct {
 type Comment struct {
 	ID      int
 	Content string
+    User_ID string
 	Author  string
+    Created_at string
 }
 type Category struct {
 	ID   int
@@ -90,7 +92,8 @@ func CreateTables() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         post_id INTEGER,
         user_id INTEGER,
-        content TEXT NOT NULL,
+        Author Text NOT NULL,
+        comment TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(post_id) REFERENCES posts(id),
         FOREIGN KEY(user_id) REFERENCES users(id)
@@ -235,11 +238,20 @@ func CreatePost(userID, title, content , categories string) error {
     _, err = stmt.Exec(user.ID , title, content, user.Username , categories)
     return err
 }
+func CreateComment(userID , postID, comment string) error {
+    stmt, err := db.Prepare("INSERT INTO comments (post_id , user_id, Author , comment) VALUES(?,?,?,?)")
+    if err != nil {
+        return err
+    }
+    user , _ := GetUserByUserName(userID)
+    _, err = stmt.Exec(postID ,user.ID , user.Username , comment)
+    return err
+}
 
 // Get comments by post ID
 func GetCommentsByPostID(postID string) ([]Comment, error) {
     var comments []Comment
-    rows, err := db.Query("SELECT id, content FROM comments WHERE post_id = ?", postID)
+    rows, err := db.Query("SELECT id, user_id, Author ,comment , created_at FROM comments WHERE post_id = ?", postID)
     if err != nil {
         return nil, err
     }
@@ -247,9 +259,11 @@ func GetCommentsByPostID(postID string) ([]Comment, error) {
 
     for rows.Next() {
         var comment Comment
-        if err := rows.Scan(&comment.ID, &comment.Content); err != nil {
+        var createdAt time.Time
+        if err := rows.Scan(&comment.ID, &comment.User_ID ,&comment.Author, &comment.Content , &createdAt); err != nil {
             return nil, err
         }
+        comment.Created_at = createdAt.Format("2006-01-02 15:04:05")
         comments = append(comments, comment)
     }
     return comments, nil

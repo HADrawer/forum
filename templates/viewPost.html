@@ -43,8 +43,9 @@
                 <a href="/like?post_id={{.Post.ID}}&like=1">Like </a> {{.Post.Likes}} |
                 <a href="/like?post_id={{.Post.ID}}&like=0">Dislike </a> {{.Post.Dislikes}}
                 <h2>Add a Comment</h2>
-                <form action="/" method="post">
-                    <textarea name="comment" required></textarea><br>
+                <form action="/Comment" method="post">
+                    <input name="PostID" value="{{.id}}" type="hidden">
+                    <textarea name="PostComment" placeholder="Write Your Comment here" required></textarea><br>
                     <input type="submit" value="Add Comment">
                 </form>
         
@@ -62,7 +63,8 @@
             {{if .Comments}}
                 <ul>
                 {{range .Comments}}
-                    <li>{{.Author}}: {{.Content}}</li>
+                    <h3>{{.Author}}</h3> <h6>{{.created_at}}</h6>
+                    <h5>{{.comment}}</h5>
                 {{end}}
                 </ul>
             {{else}}
