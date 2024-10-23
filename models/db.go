@@ -81,7 +81,7 @@ func CreateTables() {
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         Author Text NOT NULL,
-        Catagory TEXT NOT NULL,
+        Category TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
     );
@@ -185,7 +185,7 @@ func GetAllPosts() ([]Post, error) {
 
 func GetAllCategoryPosts(isCategory string) ([]Post, error) {
     var posts []Post
-    query := "SELECT id, user_id, title, content, Author FROM posts WHERE Catagory LIKE ?"
+    query := "SELECT id, user_id, title, content, Author FROM posts WHERE Category LIKE ?"
     // Prepare the LIKE pattern to search for the category
     pattern := "%" + isCategory + "%"
     
@@ -221,7 +221,7 @@ func GetPostByID(postID string) (*Post, error) {
 
 // Create post
 func CreatePost(userID, title, content , categories string) error {
-    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content ,Author, Catagory) VALUES(?, ?, ?,?,?)")
+    stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content ,Author, Category) VALUES(?, ?, ?,?,?)")
     if err != nil {
         return err
     }

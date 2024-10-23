@@ -236,6 +236,7 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				postDetails = append(postDetails, postDetail)
 			}
+			pageData["IsLoggedIn"]= isLoggedIn
 			pageData["Posts"] = postDetails
 			pageData["isExist"] = isExist
 
@@ -280,11 +281,12 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		postDetails = append(postDetails, postDetail)
 	}
+	pageData["IsLoggedIn"]= isLoggedIn
 	pageData["Posts"] = postDetails
 	pageData["isExist"] = isExist
 	pageData["CateName"] = Catagory
 
-	err1 := templates.ExecuteTemplate(w, "CatagoryViwer.html", pageData)
+	err1 := templates.ExecuteTemplate(w, "CategoryViewer.html", pageData)
 	if err1 != nil {
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}

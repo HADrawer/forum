@@ -33,7 +33,7 @@ func main() {
 	http.HandleFunc("/createPost", handlers.CreatePostHandler)
 	http.HandleFunc("/viewPost", handlers.ViewPostHandler)
 	http.HandleFunc("/myposts", handlers.CreatedPostsHandler)
-    http.HandleFunc("/CatagoryViwer", handlers.CatagoryHandler)
+    http.HandleFunc("/CategoryViewer", handlers.CatagoryHandler)
 
     // Add a fallback for unknown routes
     http.HandleFunc("/404", NotFoundHandler)
