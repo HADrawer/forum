@@ -291,7 +291,7 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Query().Get("post_id")
 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
 	// Logic to update the like/dislike in the database
-	if postID == "" || (like != "1" && like != "0") {
+	if postID == "" || (like != "1" && like != "-1") {
 		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
 		return
 	}
