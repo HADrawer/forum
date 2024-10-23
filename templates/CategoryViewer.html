@@ -16,13 +16,11 @@
                 <li><a href="home"><i class="fa fa-home"></i> Home</a></li>
                 
                 {{if .IsLoggedIn}}
-                    <li><a href="/viewPost">View posts</a></li>
                     <li><a href="/createPost">Create Post</a></li>
                     <li><a href="/myposts">Created Post</a></li>
                     <li><a href="/logout"> <i class="fa fa-sign-out"></i> Logout</a></li>
                    
                 {{else}}
-                    <li><a href="/viewPost">View posts</a></li>
                     <li><a href="/register">Register</a></li>
                     <li><a href="/login">Login</a></li>
                     
@@ -35,41 +33,9 @@
     {{range .Posts}}
     <div class="content">
     <div class="info">
-        <h1>{{.Title}}</h1>
-        <p>Content: {{.Content}}</p>
-        <p>Author: {{.Author}}</p>
-    
-    
-        
-        {{if .IsLoggedIn}}
-                <a href="/like?post_id={{.Post.ID}}&like=1">Like </a> {{.Post.Likes}} |
-                <a href="/like?post_id={{.Post.ID}}&like=0">Dislike </a> {{.Post.Dislikes}}
-                <h2>Add a Comment</h2>
-                <form action="/CatagoryViewer" method="post">
-                    <textarea name="comment" required></textarea><br>
-                    <input type="submit" value="Add Comment">
-                </form>
-        
-        {{else}}
-        <a href="/login">Like </a> {{.Post.Likes}} |
-            <a href="/login">Dislike </a> {{.Post.Dislikes}}
-
-            <form action="/login">
-                <textarea name="comment" required></textarea><br>
-                <input type="submit" value="Add Comment">
-            </form>
-            
-        {{end}}
-            <h2>Comments</h2>
-            {{if .Comments}}
-                <ul>
-                {{range .Comments}}
-                    <li>{{.Author}}: {{.Content}}</li>
-                {{end}}
-                </ul>
-            {{else}}
-                <p>No comments yet.</p>
-            {{end}}
+        <a href="/Post?id={{.Id}}"><h3>{{ .Title }}</h3></a>
+        <p>Posted By {{.Author}}</p>
+        <h5>{{.created_at}}</h5>
     
         
         </div>

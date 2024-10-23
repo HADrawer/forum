@@ -31,7 +31,7 @@ func main() {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 	http.HandleFunc("/createPost", handlers.CreatePostHandler)
-	http.HandleFunc("/viewPost", handlers.ViewPostHandler)
+	http.HandleFunc("/Post", handlers.ViewPostHandler)
 	http.HandleFunc("/myposts", handlers.CreatedPostsHandler)
     http.HandleFunc("/CategoryViewer", handlers.CatagoryHandler)
 

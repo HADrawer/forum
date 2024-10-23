@@ -207,7 +207,10 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		_, isLoggedIn := GetUserIDFromSession(r)
 		isExist := true
-		posts, err := models.GetAllPosts()
+		id := r.URL.Query().Get("id")
+		
+	post, err := models.GetPostByID(id)
+	
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
@@ -219,25 +222,13 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		RenderTemplate(w, "500", nil)                 // Render custom 500 page
 		return
 	}
-	if posts == nil {
-		isExist = false
-	}
+	
 			pageData := make(map[string]interface{})
-			
-			
-			// Create a slice to hold the post details for the template
-			var postDetails []map[string]interface{}
-			for _, post := range posts {
-				postDetail := map[string]interface{}{
-					"IsLoggedIn": isLoggedIn,
-					"Author":  post.Author,
-					"Title":   post.Title,
-					"Content": post.Content,
-				}
-				postDetails = append(postDetails, postDetail)
-			}
+				
+			pageData["Author"]= post.Author
+			pageData["Title"]= post.Title
+			pageData["Content"]= post.Content
 			pageData["IsLoggedIn"]= isLoggedIn
-			pageData["Posts"] = postDetails
 			pageData["isExist"] = isExist
 
 			err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
@@ -254,6 +245,7 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	isExist := true
 	posts, err := models.GetAllCategoryPosts(Catagory)
 	if err != nil {
+		log.Print(err)
 		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
 		return
@@ -264,7 +256,7 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 		RenderTemplate(w, "500", nil)                 // Render custom 500 page
 		return
 	}
-	
+
 	pageData := make(map[string]interface{})
 	
 	if posts == nil {
@@ -273,14 +265,18 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a slice to hold the post details for the template
 	var postDetails []map[string]interface{}
 	for _, post := range posts {
+		
 		postDetail := map[string]interface{}{
 			"IsLoggedIn": isLoggedIn,
+			"Id"	:  post.ID,
 			"Author":  post.Author,
 			"Title":   post.Title,
-			"Content": post.Content,
+			"created_at":post.Created_at,
+			
 		}
 		postDetails = append(postDetails, postDetail)
 	}
+
 	pageData["IsLoggedIn"]= isLoggedIn
 	pageData["Posts"] = postDetails
 	pageData["isExist"] = isExist

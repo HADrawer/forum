@@ -1,14 +1,14 @@
-
-
 package models
 
 import (
-    "database/sql"
-    "errors"
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
-    _ "modernc.org/sqlite" 
-    "fmt"
-    	// "strconv"
+	"time"
+
+	_ "modernc.org/sqlite"
+	// "strconv"
 )
 
 
@@ -31,7 +31,7 @@ type Post struct {
 	Content string
 	Author  string
     Category []Category
-    created_at string
+    Created_at string
 
 }
 
@@ -167,7 +167,7 @@ func GetUserByUserName(username string) (*User, error) {
 // Get all posts
 func GetAllPosts() ([]Post, error) {
     var posts []Post
-    rows, err := db.Query("SELECT id, user_id, title, content, Author   FROM posts")
+    rows, err := db.Query("SELECT  id ,user_id, title, content ,Author , created_at   FROM posts")
     if err != nil {
         return nil, err
     }
@@ -175,9 +175,11 @@ func GetAllPosts() ([]Post, error) {
 
     for rows.Next() {
         var post Post
-        if err := rows.Scan(&post.ID, &post.userID, &post.Title, &post.Content, &post.Author); err != nil {
+        var createdAt time.Time
+        if err := rows.Scan(&post.ID, &post.userID,&post.Title,&post.Content,&post.Author, &createdAt); err != nil {
             return nil, err
         }
+        post.Created_at = createdAt.Format("2006-01-02 15:04:05")
         posts = append(posts, post)
     }
     return posts, nil
@@ -185,7 +187,7 @@ func GetAllPosts() ([]Post, error) {
 
 func GetAllCategoryPosts(isCategory string) ([]Post, error) {
     var posts []Post
-    query := "SELECT id, user_id, title, content, Author FROM posts WHERE Category LIKE ?"
+    query := "SELECT id, user_id, title, content, Author , created_at FROM posts WHERE Category LIKE ?"
     // Prepare the LIKE pattern to search for the category
     pattern := "%" + isCategory + "%"
     
@@ -197,10 +199,12 @@ func GetAllCategoryPosts(isCategory string) ([]Post, error) {
     
     for rows.Next() {
         var post Post
-        if err := rows.Scan(&post.ID, &post.userID, &post.Title, &post.Content, &post.Author); err != nil {
+        var createdAt time.Time
+        if err := rows.Scan(&post.ID, &post.userID,&post.Title,&post.Content,&post.Author,&createdAt); err != nil {
             log.Print(err)
             return nil, err
         }
+        post.Created_at = createdAt.Format("2006-01-02 15:04:05")
         posts = append(posts, post)
     }
 
@@ -211,11 +215,13 @@ func GetAllCategoryPosts(isCategory string) ([]Post, error) {
 // Get post by ID
 func GetPostByID(postID string) (*Post, error) {
     var post Post
-    err := db.QueryRow("SELECT id, title, content FROM posts WHERE id = ?", postID).
-        Scan(&post.ID, &post.Title, &post.Content)
+    var createdAt time.Time
+    err := db.QueryRow("SELECT id ,user_id, title, content ,Author , created_at FROM posts WHERE id = ?", postID).
+        Scan(&post.ID, &post.userID,&post.Title,&post.Content,&post.Author, &createdAt)
     if err != nil {
         return nil, errors.New("post not found")
     }
+    post.Created_at = createdAt.Format("2006-01-02 15:04:05")
     return &post, nil
 }
 
@@ -293,24 +299,7 @@ func GetAllCategories() ([]Category, error) {
 	return categories, nil
 }
 
-// GetPostsByCategory retrieves all posts that belong to a specific category
-func GetPostsByCategory(categoryID int) ([]Post, error) {
-	rows, err := db.Query("SELECT id, title, content, author, category_id FROM posts WHERE category_id = ?", categoryID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch posts by category: %w", err)
-	}
-	defer rows.Close()
 
-	var posts []Post
-	for rows.Next() {
-		var post Post
-		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Author, &post.Category); err != nil {
-			return nil, fmt.Errorf("failed to scan post: %w", err)
-		}
-		posts = append(posts, post)
-	}
-	return posts, nil
-}
 // GetPostsFromUserID retrieves posts created by the user with the given userID
 func GetPostsFromUserID(userID string) ([]Post, error) {
 	var posts []Post
