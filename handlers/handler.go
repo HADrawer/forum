@@ -24,7 +24,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 }
 
 // BaseHandler serves pages with the base layout (base.html)
-func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, data interface{}) {
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	userID, isLoggedIn := GetUserIDFromSession(r)
 	// templateName = "base"
 	pageData := make(map[string]interface{})
@@ -48,35 +48,14 @@ func BaseHandler(w http.ResponseWriter, r *http.Request, templateName string, da
 	pageData["Catagories"] = postDetails
 
 	// Render the template with base.html as the layout
-	err1 := templates.ExecuteTemplate(w, templateName+".html", pageData)
+	err1 := templates.ExecuteTemplate(w, "base.html", pageData)
 	if err1 != nil {
 		log.Print(err)
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
 	}
 	
 }
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	userID, isLoggedIn := GetUserIDFromSession(r)
-	posts, err := models.GetAllPosts()
-	if err != nil {
-		log.Print(err)
-		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
-		return
-	}
-	data := struct {
-		Title      string
-		IsLoggedIn bool
-		UserID     string
-		Posts      []models.Post
-	}{
-		Title:      "Home",
-		IsLoggedIn: isLoggedIn,
-		UserID:     userID,
-		Posts:      posts,
-	}
-	BaseHandler(w, r, "base", data)
 
-}
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		data := struct {
@@ -240,14 +219,15 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		CommentDetails = append(CommentDetails, CommentDetail)
 	}
 	pageData := make(map[string]interface{})
-	pageData["id"] = post.ID
+	pageData["id"] = id
 	pageData["Author"]= post.Author
 	pageData["Title"]= post.Title
 	pageData["Content"]= post.Content
 	pageData["IsLoggedIn"]= isLoggedIn
 	pageData["isExist"] = isExist
 	pageData["Comments"] = CommentDetails
-
+	pageData["likes"]	= post.Likes
+	pageData["DisLikes"] = post.Dislikes
 
 			err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
 			if err1 != nil {
@@ -307,6 +287,7 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
+	userID, _ := GetUserIDFromSession(r)
 	postID := r.URL.Query().Get("post_id")
 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
 	// Logic to update the like/dislike in the database
@@ -314,9 +295,47 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
 		return
 	}
+	if like == "1"{
+		if models.IsLike(postID,userID){
+			models.RemoveLike(postID,userID)
+			models.DecraseLike(postID)
+
+			
+		}else if models.IsDisLike(postID,userID){
+			models.DecraseDisLike(postID)
+			models.IncreaseLike(postID)
+			models.UpdateLike(postID,userID,"1")
+
+			
+
+		}else {
+			models.IncreaseLike(postID)
+			models.AddLike(postID,userID,"1")
+		}
+	}
+	if like == "-1"{
+		if models.IsDisLike(postID,userID){
+			models.RemoveLike(postID,userID)
+			models.DecraseDisLike(postID)
+
+			
+		}else if models.IsLike(postID,userID){
+			models.DecraseLike(postID)
+			models.IncreaseDisLike(postID)
+			models.UpdateLike(postID,userID,"-1")
+
+			
+
+		}else {
+			models.IncreaseLike(postID)
+			models.AddLike(postID,userID,"1")
+		}
+	}
+
 	log.Printf("Post %s liked: %s", postID, like)
-	http.Redirect(w, r, "/viewPost?id="+postID, http.StatusSeeOther)
+	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
 }
+
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Destroy the session
 	DestroySession(w, r)

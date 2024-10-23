@@ -40,8 +40,8 @@
     
         
         {{if .IsLoggedIn}}
-                <a href="/like?post_id={{.Post.ID}}&like=1">Like </a> {{.Post.Likes}} |
-                <a href="/like?post_id={{.Post.ID}}&like=0">Dislike </a> {{.Post.Dislikes}}
+                <a href="/Like?post_id={{.id}}&like=1">Like </a> {{.likes}} |
+                <a href="/Like?post_id={{.id}}&like=-1">Dislike </a> {{.DisLikes}}
                 <h2>Add a Comment</h2>
                 <form action="/Comment" method="post">
                     <input name="PostID" value="{{.id}}" type="hidden">
@@ -50,8 +50,8 @@
                 </form>
         
         {{else}}
-        <a href="/login">Like </a> {{.Post.Likes}} |
-            <a href="/login">Dislike </a> {{.Post.Dislikes}}
+        <a href="/login">Like </a> {{.likes}} |
+            <a href="/login">Dislike </a> {{.DisLikes}}
 
             <form action="/login">
                 <textarea name="comment" required></textarea><br>
