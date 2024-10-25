@@ -4,24 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/base.css">
-    <title>{{.Title}}</title>
+    <title>My Created Post</title>
 </head>
 <body>
     <main>
-        <h1>{{.Title}}</h1>
-        {{if .Posts}}
+        <nav class="navbar">
+            <a href="/" class="logo"><i ></i> Fourm</a>
+            
             <ul>
-                {{range .Posts}}
-                    <li>
-                        <h2>{{.Title}}</h2>
-                        <p>{{.Content}}</p>
-                    </li>
+                <li><a href="home"><i class="fa fa-home"></i> Home</a></li>
+                
+                {{if .IsLoggedIn}}
+                    <li><a href="/createPost">Create Post</a></li>
+                    <li><a href="/myposts">Created Post</a></li>
+                    <li><a href="/LikedPosts">Liked Posts</a></li>
+
+                    <li><a style="margin-left: 40px;" href="/logout"> <i class="fa fa-sign-out"></i> Logout</a></li>
+                   
+                {{else}}
+                    <li><a href="/register">Register</a></li>
+                    <li><a href="/login">Login</a></li>
+                    
                 {{end}}
             </ul>
-        {{else}}
-            <p>No created posts found.</p>
-        {{end}}
-    </main>
-</body>
+            <h1 class="UserID">{{.UserID}}</h1>
+        </nav>
+    {{if .isExist}}
+
+    {{range .Posts}}
+    <div class="content">
+    <div class="info">
+        <a href="/Post?id={{.Id}}"><h3>{{ .Title }}</h3></a>
+        <p>Posted By {{.Author}}</p>
+        <h5>{{.created_at}}</h5>
+    
+        
+        </div>
+        </div>
+    {{end}}
+    {{else}}
+    <div class="content">
+        <div class="info">
+    <h1>No created posts found.</h1>
+</div>
+</div>
+    {{end}}
+</main>
+<footer>
+    <p>&copy; Forum 2024 </p>
+</footer>
 </html>
 

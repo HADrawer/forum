@@ -193,11 +193,11 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, loggedIn := GetUserIDFromSession(r)
+	userID, isLoggedIn := GetUserIDFromSession(r)
 
 	// Check if user is logged in
-	if !loggedIn {
-		http.Redirect(w, r, "/login", http.StatusSeeOther) // 303
+	if !isLoggedIn {
+		http.Redirect(w, r, "/", http.StatusSeeOther) // 303
 		return
 	}
 
@@ -207,17 +207,30 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to load posts", http.StatusInternalServerError) // 500
 		return
 	}
-
-	// Render the template with posts
-	data := struct {
-		Title string
-		Posts []models.Post
-	}{
-		Title: "My Created Posts",
-		Posts: posts,
+	isExist := true
+	if posts == nil {
+		isExist = false
 	}
 
-	RenderTemplate(w, "myposts", data) // Render the "myposts" template
+	// Render the template with posts
+	var postDetails []map[string]interface{}
+	for _, post := range posts {
+		postDetail := map[string]interface{}{
+			"Id":         post.ID,
+			"Author":     post.Author,
+			"Title":      post.Title,
+			"created_at": post.Created_at,
+		}
+		postDetails = append(postDetails, postDetail)
+	}
+	pageData := make(map[string]interface{})
+	pageData["isExist"] = isExist
+	pageData["IsLoggedIn"] = isLoggedIn
+	pageData["Posts"] = postDetails
+	err1 := templates.ExecuteTemplate(w, "myposts.html", pageData)
+	if err1 != nil {
+		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
+	}
 }
 
 
@@ -378,19 +391,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 //-----------------------------------------------------------------------
 
-// func CommentHandler(w http.ResponseWriter, r *http.Request){
-// 	userID, _ := GetUserIDFromSession(r)
-
-// 	postId := r.FormValue("PostID")
-// 	Comment := r.FormValue("PostComment")
-
-// 	err := models.CreateComment(userID,postId,Comment)
-// 	if err != nil {
-// 		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
-// 	}
-
-// 	http.Redirect(w, r, "/Post?id="+postId, http.StatusFound)
-// }
 
 func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := GetUserIDFromSession(r)

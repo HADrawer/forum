@@ -211,7 +211,6 @@ func GetAllCategoryPosts(isCategory string) ([]Post, error) {
 		var post Post
 		var createdAt time.Time
 		if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Author, &createdAt); err != nil {
-			log.Print(err)
 			return nil, err
 		}
 		post.Created_at = createdAt.Format("2006-01-02 15:04:05")
@@ -320,7 +319,8 @@ func GetAllCategories() ([]Category, error) {
 // GetPostsFromUserID retrieves posts created by the user with the given userID
 func GetPostsFromUserID(userID string) ([]Post, error) {
 	var posts []Post
-	rows, err := db.Query("SELECT id, title, content FROM posts WHERE user_id = ?", userID)
+	user , _ := GetUserByUserName(userID)
+	rows, err := db.Query("SELECT id, user_id, title, content, Author , created_at FROM posts WHERE user_id = ?", user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -328,9 +328,12 @@ func GetPostsFromUserID(userID string) ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-		if err := rows.Scan(&post.ID, &post.Title, &post.Content); err != nil {
+		var createdAt time.Time
+		if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Author, &createdAt); err != nil {
+			
 			return nil, err
 		}
+		post.Created_at = createdAt.Format("2006-01-02 15:04:05")
 		posts = append(posts, post)
 	}
 
