@@ -144,7 +144,7 @@ func CreateUser(user User) error {
 	_, err = stmt.Exec(user.Email, user.Username, user.Password)
 	if err != nil {
 		// Check for unique constraint violation
-		if err.Error() == "UNIQUE constraint failed: users.email, users.username" {
+		if err.Error() == "constraint failed: UNIQUE constraint failed: users.username (2067)" {
 			return ErrUserExists
 		}
 		log.Printf("Failed to execute statement: %v", err)

@@ -89,7 +89,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		err = models.CreateUser(newUser)
 		if err != nil {
 			if err == models.ErrUserExists {
-				http.Error(w, "Email or username already exists", http.StatusBadRequest)
+				pageData := map[string]interface{}{
+					"InvalidRegister": "Email or username already exists",
+				}
+				RenderTemplate(w, "register", pageData)
+				return
 			} else {
 				log.Println("Error creating user:", err)
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
