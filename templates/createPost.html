@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -54,5 +54,72 @@
     </div>
 </main>
     
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/create_post.css">
+</head>
+<body>
+    <main>
+        <nav class="navbar">
+            <a href="/" class="logo"><i></i> Forum</a>
+            <ul>
+                <li><a href="/"><i class="fa fa-home"></i>Home</a></li>
+                <li><a href="/logout"><i class="fa fa-sign-out"></i>Logout</a></li>
+            </ul>
+            <h1 class="UserID">{{.UserID}}</h1>
+        </nav>
+        <div class="post-container">
+            <h2>Create Post</h2>
+            <form action="/createPost" method="post">
+                <div class="form-group">
+                    <label class="title" for="title">Title</label>
+                    <input placeholder="Enter a Title for Post" id="title" name="title" type="text" class="form_style" required>
+                </div>
+                <div class="form-group">
+                    <label class="content" for="content">Content</label>
+                    <textarea placeholder="What do you think?" id="content" name="content" class="form_style" required></textarea>
+                </div>
+
+                <div class="categories">
+                    <label class="check"><input type="checkbox" name="categories[]" value="General"><span>General</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Technology"><span>Technology</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Science"><span>Science</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Sports"><span>Sports</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Gaming"><span>Gaming</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Music"><span>Music</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Books"><span>Books</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Movies"><span>Movies</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="TV"><span>TV</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Food"><span>Food</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Travel"><span>Travel</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Photography"><span>Photography</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Art"><span>Art</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Writing"><span>Writing</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Programming"><span>Programming</span></label>
+                    <label class="check"><input type="checkbox" name="categories[]" value="Other"><span>Other</span></label>
+                </div>
+                <span id="categoryError" style="color:red; display:none;">Please fill out this field.</span> <!-- Error message for category -->
+                <button class="btn" type="submit">Post</button>
+            </form>
+        </div>
+    </main>
+    <script>
+        // JavaScript to show the error message if categories are not selected
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const checkboxes = document.querySelectorAll('input[name="categories[]"]:checked');
+            if (checkboxes.length === 0) {
+                event.preventDefault(); // Prevent form submission
+                document.getElementById('categoryError').style.display = 'block'; // Show error message
+            } else {
+                document.getElementById('categoryError').style.display = 'none'; // Hide error message if categories are selected
+            }
+        });
+    </script>
 </body>
 </html>
