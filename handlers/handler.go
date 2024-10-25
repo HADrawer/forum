@@ -56,13 +56,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		data := struct {
-			Title string
-		}{
-			Title: "Register",
-		}
-		RenderTemplate(w, "register", data)
-	} else if r.Method == http.MethodPost {
+		
+		RenderTemplate(w, "register", nil)
+	} 
+	if r.Method == http.MethodPost {
 		// Extract form data
 		email := r.FormValue("email")
 		username := r.FormValue("username")
