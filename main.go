@@ -33,6 +33,7 @@ func main() {
 	http.HandleFunc("/createPost", handlers.CreatePostHandler)
 	http.HandleFunc("/Post", handlers.ViewPostHandler)
 	http.HandleFunc("/myposts", handlers.CreatedPostsHandler)
+    http.HandleFunc("/LikedPosts", handlers.LikedPostsHandler)
     http.HandleFunc("/CategoryViewer", handlers.CatagoryHandler)
     http.HandleFunc("/Comment", handlers.CommentHandler)
     http.HandleFunc("/Like", handlers.LikeHandler)

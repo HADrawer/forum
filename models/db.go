@@ -339,6 +339,36 @@ func GetPostsFromUserID(userID string) ([]Post, error) {
 
 	return posts, nil
 }
+func GetPostsFromLiked(userID string) ([]Post, error) {
+	var posts []Post
+	user , _ := GetUserByUserName(userID)
+
+	query := `
+		SELECT p.id, p.user_id, p.title, p.content, p.Author, p.created_at
+		FROM posts p
+		JOIN likes l ON p.id = l.post_id
+		WHERE l.user_id = ? AND l.is_like = 1
+	`
+
+	rows, err := db.Query(query, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		var createdAt time.Time
+		if err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Author, &createdAt); err != nil {
+			
+			return nil, err
+		}
+		post.Created_at = createdAt.Format("2006-01-02 15:04:05")
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
 func LikeCounter(postID string) (int ,error){
 	var likes []Like
 	rows, err := db.Query("SELECT is_like  FROM likes WHERE post_id = ? AND is_like = 1 ", postID)

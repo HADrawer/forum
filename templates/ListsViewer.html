@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/base.css">
-    <title>My Created Post</title>
+    <title>{{.Title}} Posts</title>
+    <link rel="stylesheet" href="/static/css/viewPost.css">
 </head>
 <body>
     <main>
@@ -45,7 +46,7 @@
     {{else}}
     <div class="content">
         <div class="info">
-    <h1>No created posts found.</h1>
+    <h1>{{.NoPosts}}</h1>
 </div>
 </div>
     {{end}}
@@ -53,5 +54,5 @@
 <footer>
     <p>&copy; Forum 2024 </p>
 </footer>
+</body>
 </html>
-

@@ -243,13 +243,61 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 	pageData := make(map[string]interface{})
 	pageData["isExist"] = isExist
 	pageData["IsLoggedIn"] = isLoggedIn
+	pageData["Title"] = "My Created"
+	if isExist == false {
+		pageData["NoPosts"] = "No created posts found."
+	}
 	pageData["Posts"] = postDetails
-	err1 := templates.ExecuteTemplate(w, "myposts.html", pageData)
+	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
 	if err1 != nil {
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
 	}
 }
 
+func LikedPostsHandler(w http.ResponseWriter, r *http.Request) {
+	userID, isLoggedIn := GetUserIDFromSession(r)
+
+	// Check if user is logged in
+	if !isLoggedIn {
+		http.Redirect(w, r, "/", http.StatusSeeOther) // 303
+		return
+	}
+
+	// Get posts for the logged-in user
+	posts, err := models.GetPostsFromLiked(userID)
+	if err != nil {
+		http.Error(w, "Unable to load posts", http.StatusInternalServerError) // 500
+		return
+	}
+	isExist := true
+	if posts == nil {
+		isExist = false
+	}
+
+	// Render the template with posts
+	var postDetails []map[string]interface{}
+	for _, post := range posts {
+		postDetail := map[string]interface{}{
+			"Id":         post.ID,
+			"Author":     post.Author,
+			"Title":      post.Title,
+			"created_at": post.Created_at,
+		}
+		postDetails = append(postDetails, postDetail)
+	}
+	pageData := make(map[string]interface{})
+	pageData["isExist"] = isExist
+	pageData["IsLoggedIn"] = isLoggedIn
+	pageData["Title"] = "Liked"
+	if isExist == false {
+		pageData["NoPosts"] = "No Liked posts found."
+	}
+	pageData["Posts"] = postDetails
+	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
+	if err1 != nil {
+		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
+	}
+}
 
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	_, isLoggedIn := GetUserIDFromSession(r)
@@ -347,10 +395,13 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	pageData["IsLoggedIn"] = isLoggedIn
 	pageData["Posts"] = postDetails
 	pageData["isExist"] = isExist
-	pageData["CateName"] = catagory
+	pageData["Title"] = catagory
+	if isExist == false {
+		pageData["NoPosts"] = "This Catagory is Empty."
+	}
 
 	// Render the category view template
-	err1 := templates.ExecuteTemplate(w, "CategoryViewer.html", pageData)
+	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
 	if err1 != nil {
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
 	}
