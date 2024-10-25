@@ -336,6 +336,40 @@ func GetPostsFromUserID(userID string) ([]Post, error) {
 
 	return posts, nil
 }
+func LikeCounter(postID string) (int ,error){
+	var likes []Like
+	rows, err := db.Query("SELECT is_like  FROM likes WHERE post_id = ? AND is_like = 1 ", postID)
+if err != nil {
+	return 0, errors.New(" not found")
+}
+defer rows.Close()
+
+	for rows.Next() {
+		var like Like
+		if err := rows.Scan(&like.IsLike); err != nil {
+			return 0, err
+		}
+		likes = append(likes, like)
+	}
+return len(likes), nil
+}
+func DisLikeCounter(postID string) (int ,error){
+	var likes []Like
+	rows, err := db.Query("SELECT is_like  FROM likes WHERE post_id = ? AND is_like = -1 ", postID)
+	if err != nil {
+		return 0, errors.New(" not found")
+	}
+	defer rows.Close()
+	
+		for rows.Next() {
+			var like Like
+			if err := rows.Scan(&like.IsLike); err != nil {
+				return 0, err
+			}
+			likes = append(likes, like)
+		}
+	return len(likes), nil
+}
 
 func AddLike(postID, userID, Liked string) {
 	stat, _ := db.Prepare("INSERT INTO likes (post_id,user_id, is_like) VALUES (?,?,?)")
@@ -343,7 +377,7 @@ func AddLike(postID, userID, Liked string) {
 	stat.Exec(postID, user.ID, Liked)
 }
 func RemoveLike(postID, userID string) {
-	stat, _ := db.Prepare("DELETE FROM votes WHERE post_id = ? AND user_id = ?")
+	stat, _ := db.Prepare("DELETE FROM likes WHERE post_id = ? AND user_id = ?")
 	user, _ := GetUserByUserName(userID)
 	stat.Exec(postID, user.ID)
 }
@@ -378,22 +412,4 @@ func IsDisLike(postID, userID string) bool {
 		return true
 	}
 	return false
-}
-
-func IncreaseLike(postID string) {
-	stat, _ := db.Prepare("UPDATE posts SET likes = likes + 1 WHERE id = ?")
-	stat.Exec(postID)
-}
-func DecraseLike(postID string) {
-	stat, _ := db.Prepare("UPDATE posts SET likes = likes - 1 WHERE id = ?")
-	stat.Exec(postID)
-}
-
-func IncreaseDisLike(postID string) {
-	stat, _ := db.Prepare("UPDATE posts SET Dislikes = Dislikes + 1 WHERE id = ?")
-	stat.Exec(postID)
-}
-func DecraseDisLike(postID  string) {
-	stat, _ := db.Prepare("UPDATE posts SET Dislikes = Dislikes - 1 WHERE id = ?")
-	stat.Exec(postID)
 }
