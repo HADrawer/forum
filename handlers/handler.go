@@ -435,28 +435,41 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //-----------------------------------------------------------------------
+// Set a flag for cooldown period
+
+// A simple map to track user actions; for real applications, consider a more persistent method.
+var userActionStatus = make(map[string]bool)
 
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := GetUserIDFromSession(r)
 	postID := r.URL.Query().Get("post_id")
-	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
+	like := r.URL.Query().Get("like") // "1" for like, "-1" for dislike
 
-	// Logic to update the like/dislike in the database
+	// Validate inputs
 	if postID == "" || (like != "1" && like != "-1") {
-		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
+		http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
 		return
 	}
 
+	// Check if the user has recently performed an action
+	if userActionStatus[userID] {
+		http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
+		return
+	}
+
+	// Mark the user as having performed an action
+	userActionStatus[userID] = true
+
+	// Process like/dislike logic
 	if like == "1" {
 		if models.IsLike(postID, userID) {
 			models.RemoveLike(postID, userID)
 			models.DecraseLike(postID)
-
 		} else if models.IsDisLike(postID, userID) {
-			models.DecraseDisLike(postID)
-			models.IncreaseLike(postID)
+			models.RemoveLike(postID, userID) // Remove the dislike first
+			models.DecraseDisLike(postID)     // Decrease dislike count
+			models.IncreaseLike(postID)        // Increase like count
 			models.UpdateLike(postID, userID, "1")
-
 		} else {
 			models.IncreaseLike(postID)
 			models.AddLike(postID, userID, "1")
@@ -465,20 +478,69 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 		if models.IsDisLike(postID, userID) {
 			models.RemoveLike(postID, userID)
 			models.DecraseDisLike(postID)
-
 		} else if models.IsLike(postID, userID) {
-			models.DecraseLike(postID)
-			models.IncreaseDisLike(postID)
+			models.RemoveLike(postID, userID) // Remove the like first
+			models.DecraseLike(postID)        // Decrease like count
+			models.IncreaseDisLike(postID)    // Increase dislike count
 			models.UpdateLike(postID, userID, "-1")
-
 		} else {
 			models.IncreaseDisLike(postID)
 			models.AddLike(postID, userID, "-1")
 		}
 	}
 
+	// Redirect to the post page after action
 	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
 }
+
+// Reset the action status on the next page load
+func ResetUserAction(w http.ResponseWriter, r *http.Request) {
+	userID, _ := GetUserIDFromSession(r)
+	delete(userActionStatus, userID)
+}
+// func LikeHandler(w http.ResponseWriter, r *http.Request) {
+// 	userID, _ := GetUserIDFromSession(r)
+// 	postID := r.URL.Query().Get("post_id")
+// 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
+
+// 	// Logic to update the like/dislike in the database
+// 	if postID == "" || (like != "1" && like != "-1") {
+// 		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
+// 		return
+// 	}
+
+// 	if like == "1" {
+// 		if models.IsLike(postID, userID) {
+// 			models.RemoveLike(postID, userID)
+// 			models.DecraseLike(postID)
+
+// 		} else if models.IsDisLike(postID, userID) {
+// 			models.DecraseDisLike(postID)
+// 			models.IncreaseLike(postID)
+// 			models.UpdateLike(postID, userID, "1")
+
+// 		} else {
+// 			models.IncreaseLike(postID)
+// 			models.AddLike(postID, userID, "1")
+// 		}
+// 	} else if like == "-1" {
+// 		if models.IsDisLike(postID, userID) {
+// 			models.RemoveLike(postID, userID)
+// 			models.DecraseDisLike(postID)
+
+// 		} else if models.IsLike(postID, userID) {
+// 			models.DecraseLike(postID)
+// 			models.IncreaseDisLike(postID)
+// 			models.UpdateLike(postID, userID, "-1")
+
+// 		} else {
+// 			models.IncreaseDisLike(postID)
+// 			models.AddLike(postID, userID, "-1")
+// 		}
+// 	}
+
+// 	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
+// }
 
 //-----------------------------------------------------------------------
 
