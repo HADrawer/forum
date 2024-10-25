@@ -111,17 +111,25 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		RenderTemplate(w, "login", nil)
-	} else if r.Method == http.MethodPost {
+		return
+	} 
+	
+	if r.Method == http.MethodPost {
 		Email_UserName := r.FormValue("email")
 		password := r.FormValue("password")
 		user, err := models.GetUserByEmail(Email_UserName)
 		if err != nil {
 			user, err = models.GetUserByUserName(Email_UserName)
 		}
+		
 		if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-			http.Error(w, "Invalid login", http.StatusUnauthorized)
+			pageData := map[string]interface{}{
+				"InvalidLogin": "The Username or Password is Uncorrect",
+			}
+			RenderTemplate(w, "login", pageData)
 			return
 		}
+
 		CreateSession(w, user.Username)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
@@ -163,8 +171,10 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		RenderTemplate(w, "createPost", nil) // Render form for creating a post
-	} else if r.Method == http.MethodPost {
+		RenderTemplate(w, "createPost", nil)
+		return
+	}
+	 if r.Method == http.MethodPost {
 		title := r.FormValue("title")
 		content := r.FormValue("content")
 		categories := r.Form["categories[]"]
@@ -172,7 +182,10 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Check if title and content are provided
 		if title == "" || content == "" || len(categories) == 0 {
-			http.Error(w, "Bad request: Missing title or content", http.StatusBadRequest) // 400
+			pageData := map[string]interface{}{
+				"InvalidPost": "Please fill out this field",
+			}
+			RenderTemplate(w, "createPost", pageData) // 400
 			return
 		}
 

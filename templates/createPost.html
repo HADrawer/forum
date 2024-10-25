@@ -46,23 +46,12 @@
                     <label class="check"><input type="checkbox" name="categories[]" value="Programming"><span>Programming</span></label>
                     <label class="check"><input type="checkbox" name="categories[]" value="Other"><span>Other</span></label>
                 </div>
-                <span id="categoryError" style="color:red; display:none;">Please fill out this field.</span> <!-- Error message for category -->
+                <span  style="color:red; ">{{.InvalidPost}}.</span> <!-- Error message for category -->
                 <button class="btn" type="submit">Post</button>
             </form>
         </div>
     </main>
-    <script>
-        // JavaScript to show the error message if categories are not selected
-        document.querySelector('form').addEventListener('submit', function(event) {
-            const checkboxes = document.querySelectorAll('input[name="categories[]"]:checked');
-            if (checkboxes.length === 0) {
-                event.preventDefault(); // Prevent form submission
-                document.getElementById('categoryError').style.display = 'block'; // Show error message
-            } else {
-                document.getElementById('categoryError').style.display = 'none'; // Hide error message if categories are selected
-            }
-        });
-    </script>
+    
 </body>
 </html>
 
