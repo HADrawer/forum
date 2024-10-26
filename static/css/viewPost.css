@@ -207,3 +207,44 @@ footer {
       padding: 6px 12px;
     }
   }
+  .reaction-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+
+.comment-box {
+    background-color: rgba(245, 185, 185, 0.9);
+    border: 2px solid #264143;
+    border-radius: 20px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 3px 4px 0px 1px #E99F4C;
+    color: #312f2f;
+}
+
+.comment-content {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  overflow: hidden;
+  margin-bottom: 5px;
+  transition: max-height 0.3s ease; /* Smooth transition */
+  position: relative;
+  cursor: pointer; /* Change cursor to pointer */
+}
+
+.comment-content.expanded {
+  -webkit-line-clamp: unset; /* Remove line limit */
+  max-height: none; /* Allow full height */
+}
+
+.comment-content:hover {
+    max-height: none; /* Expand on hover */
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+.divider {
+    border: 1px solid #264143;
+    margin: 20px 0;
+}

@@ -10,8 +10,7 @@
 <body>
     <main>
         <nav class="navbar">
-            <a href="/" class="logo"><i ></i> Fourm</a>
-            
+            <a href="/" class="logo"><i></i> Forum</a>
             <ul>
                 <li><a href="home"><i class="fa fa-home"></i> Home</a></li>
                 
@@ -19,76 +18,74 @@
                     <li><a href="/createPost">Create Post</a></li>
                     <li><a href="/myposts">Created Post</a></li>
                     <li><a href="/LikedPosts">Liked Posts</a></li>
-
-                    <li><a style="margin-left: 40px;" href="/logout"> <i class="fa fa-sign-out"></i> Logout</a></li>
-                   
+                    <li><a style="margin-left: 40px;" href="/logout"><i class="fa fa-sign-out"></i> Logout</a></li>
                 {{else}}
                     <li><a href="/register">Register</a></li>
                     <li><a href="/login">Login</a></li>
-                    
                 {{end}}
             </ul>
             <h1 class="UserID">{{.UserID}}</h1>
         </nav>
-    {{if .isExist}}
 
-    
-    <div class="content">
-    <div class="info">
-        <h1>{{.Title}}</h1>
-        <p>Content: {{.Content}}</p>
-        <p>Author: {{.Author}}</p>
-    
-    
-        
-        {{if .IsLoggedIn}}
-                <a href="/Like?post_id={{.id}}&like=1">Like </a> {{.likes}} |
-                <a href="/Like?post_id={{.id}}&like=-1">Dislike </a> {{.DisLikes}}
-                <h2>Add a Comment</h2>
-                <form action="/Comment" method="post">
-                    <input name="PostID" value="{{.id}}" type="hidden">
-                    <textarea name="PostComment" placeholder="Write Your Comment here" required></textarea><br>
-                    <input type="submit" value="Add Comment">
-                </form>
-        
-        {{else}}
-        <a href="/login">Like </a> {{.likes}} |
-            <a href="/login">Dislike </a> {{.DisLikes}}
+        {{if .isExist}}
+            <div class="content">
+                <div class="info">
+                    <h1>{{.Title}}</h1>
+                    <p>Content: {{.Content}}</p>
+                    <p>Author: {{.Author}}</p>
 
-            <form action="/login">
-                <textarea name="comment" required></textarea><br>
-                <input type="submit" value="Add Comment">
-            </form>
-            
-        {{end}}
-            <h2>Comments</h2>
-            {{if .Comments}}
-                <ul>
-                {{range .Comments}}
-                <h3>{{.Author}}</h3> 
-        
-                <h5>{{.comment}}</h5>
-                <h6>{{.created_at}}</h6>
+                    <div class="reaction-buttons">
+                        {{if .IsLoggedIn}}
+                            <button class="button-primary" onclick="location.href='/Like?post_id={{.id}}&like=1'">Like {{.likes}}</button>
+                            <button class="button-primary" onclick="location.href='/Like?post_id={{.id}}&like=-1'">Dislike {{.DisLikes}}</button>
+                        {{else}}
+                            <button class="button-primary" onclick="location.href='/login'">Like {{.likes}}</button>
+                            <button class="button-primary" onclick="location.href='/login'">Dislike {{.DisLikes}}</button>
+                        {{end}}
+                    </div>
+                    {{if .IsLoggedIn}}
+                    <h2>Add a Comment</h2>
+                    <form action="/Comment" method="post">
+                        <input name="PostID" value="{{.id}}" type="hidden">
+                        <textarea name="PostComment" placeholder="Write Your Comment here" required></textarea><br>
+                        <input type="submit" class="button-primary" value="Add Comment">
+                    </form>
+                {{else}}
+                    <h2>Add a Comment</h2>
+                    <p>Please <a href="/login">log in</a> to add a comment.</p>
                 {{end}}
-                </ul>
-            {{else}}
-                <p>No comments yet.</p>
-            {{end}}
-    
-        
-        </div>
-        </div>
-    
-    {{else}}
-    <div class="content">
-        <div class="info">
-    <h1>This Catagory is Empty</h1>
-</div>
-</div>
-    {{end}}
-</main>
-<footer>
-    <p>&copy; Forum 2024 </p>
-</footer>
+                
+                    <hr class="divider">
+
+                    <h2>Comments</h2>
+                    {{if .Comments}}
+                        <ul>
+                        {{range .Comments}}
+                            <div class="comment-box">
+                                <h3>{{.Author}}</h3>
+                                <div class="comment-content" onclick="this.classList.toggle('expanded');">
+                                    <p class="comment-text">{{.comment}}</p>
+                                </div>
+                                <h6>{{.created_at}}</h6>
+                            </div>
+                        {{end}}
+                        </ul>
+                    {{else}}
+                        <p>No comments yet.</p>
+                    {{end}}
+                    
+                </div>
+            </div>
+        {{else}}
+            <div class="content">
+                <div class="info">
+                    <h1>This Category is Empty</h1>
+                </div>
+            </div>
+        {{end}}
+    </main>
+    <footer>
+        <p>&copy; Forum 2024 </p>
+    </footer>
 </body>
 </html>
