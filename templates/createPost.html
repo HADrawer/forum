@@ -29,22 +29,9 @@
                 </div>
 
                 <div class="categories">
-                    <label class="check"><input type="checkbox" name="categories[]" value="General"><span>General</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Technology"><span>Technology</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Science"><span>Science</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Sports"><span>Sports</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Gaming"><span>Gaming</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Music"><span>Music</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Books"><span>Books</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Movies"><span>Movies</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="TV"><span>TV</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Food"><span>Food</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Travel"><span>Travel</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Photography"><span>Photography</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Art"><span>Art</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Writing"><span>Writing</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Programming"><span>Programming</span></label>
-                    <label class="check"><input type="checkbox" name="categories[]" value="Other"><span>Other</span></label>
+                    {{range .Catagories}}
+                    <label class="check"><input type="checkbox" name="categories[]" value="{{.Catagory}}"><span>{{.Catagory}}</span></label>
+                    {{end}}
                 </div>
                 <span  style="color:red; ">{{.InvalidPost}}.</span> <!-- Error message for category -->
                 <button class="btn" type="submit">Post</button>

@@ -172,7 +172,18 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		RenderTemplate(w, "createPost", nil)
+		Catagories, _ := models.GetAllCategories()
+		pageData := make(map[string]interface{})
+		var postDetails []map[string]interface{}
+	for _, Catagory := range Catagories {
+		postDetail := map[string]interface{}{
+			"Catagory": Catagory.Name,
+		}
+		postDetails = append(postDetails, postDetail)
+	}
+		pageData["Catagories"] = postDetails
+		RenderTemplate(w, "createPost", pageData)
+		
 		return
 	}
 	 if r.Method == http.MethodPost {
@@ -189,8 +200,6 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			RenderTemplate(w, "createPost", pageData) // 400
 			return
 		}
-
-
 
 		// Attempt to create the post
 		err := models.CreatePost(userID, title, content, stringCategories)
