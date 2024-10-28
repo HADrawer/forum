@@ -14,6 +14,7 @@ var templates = template.Must(template.ParseGlob("templates/*.html"))
 
 // renderTemplate helper function
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
+	
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		log.Print(err)
@@ -23,6 +24,10 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 
 // BaseHandler serves pages with the base layout (base.html)
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
 	userID, isLoggedIn := GetUserIDFromSession(r)
 	// templateName = "base"
 	pageData := make(map[string]interface{})
@@ -165,6 +170,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 //		}
 //	}
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
+	
 	userID, loggedIn := GetUserIDFromSession(r)
 	if !loggedIn {
 		http.Redirect(w, r, "/login", http.StatusSeeOther) // 303
@@ -172,17 +178,8 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		Catagories, _ := models.GetAllCategories()
-		pageData := make(map[string]interface{})
-		var postDetails []map[string]interface{}
-	for _, Catagory := range Catagories {
-		postDetail := map[string]interface{}{
-			"Catagory": Catagory.Name,
-		}
-		postDetails = append(postDetails, postDetail)
-	}
-		pageData["Catagories"] = postDetails
-		RenderTemplate(w, "createPost", pageData)
+		
+		RenderTemplate(w, "createPost", nil)
 		
 		return
 	}
