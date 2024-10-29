@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.CateName}} Posts</title>
-    <link rel="stylesheet" href="/static/css/viewPost.css">
+    <link rel="stylesheet" href="/static/css/viewPost2.css">
 </head>
 <body>
     <main>
@@ -36,11 +36,11 @@
 
                     <div class="reaction-buttons">
                         {{if .IsLoggedIn}}
-                            <button class="button-primary" onclick="location.href='/Like?post_id={{.id}}&like=1'">Like {{.likes}}</button>
-                            <button class="button-primary" onclick="location.href='/Like?post_id={{.id}}&like=-1'">Dislike {{.DisLikes}}</button>
+                            <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=1'">Like {{.likes}}</button>
+                            <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=-1'">Dislike {{.DisLikes}}</button>
                         {{else}}
-                            <button class="button-primary" onclick="location.href='/login'">Like {{.likes}}</button>
-                            <button class="button-primary" onclick="location.href='/login'">Dislike {{.DisLikes}}</button>
+                            <button class="like" onclick="location.href='/login'">Like {{.likes}}</button>
+                            <button class="like" onclick="location.href='/login'">Dislike {{.DisLikes}}</button>
                         {{end}}
                     </div>
                     {{if .IsLoggedIn}}
@@ -87,5 +87,6 @@
     <footer>
         <p>&copy; Forum 2024 </p>
     </footer>
+    
 </body>
 </html>
