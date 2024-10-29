@@ -6,12 +6,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>home</title>
     <link rel="stylesheet" href="/static/css/base.css">
-    <script>
-        // Refresh the page every 5 seconds
-        setInterval(function() {
-            location.reload();
-        }, 5000); // 5000 milliseconds = 5 seconds
-    </script>
+  
 </head>
 
 <body>
@@ -42,34 +37,22 @@
         </nav>
         <div class="content">
             <div class="info">
-                <h1 class="font-effect-neon">Welcome to the Forum</h1>
+                <h1>Welcome to the Forum</h1>
                 <p>A place where you can share your ideas</p>
                 <div class="sidebar">
                     <h2>Categories</h2>
                     <ul>
-                        
-                         
+                        <form action="/CategoryViewer"  method="post">
+                        <div class="categories">
+                            {{range .Catagories}}
+                          <input type="submit" name="Catagory" value= {{.Catagory}}>
+                          {{end}}
                         </div>
                     </form>
                     </ul>
                 </div>
             </div>
         </div>
-        {{range .Catagories}}
-        <div class="content">
-            <div class="info">
-                <div class="sidebar">
-                    <ul>
-                        <form action="/CategoryViewer"  method="post">
-                        <div class="categories">
-                          <input type="submit" name="Catagory" value= {{.Catagory}}>
-                        </div>
-                    </form>
-                </ul>
-            </div>
-        </div>
-    </div>
-    {{end}}
     </main>
     <footer>
         <p>&copy; Forum 2024 </p>

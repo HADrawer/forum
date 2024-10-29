@@ -131,24 +131,7 @@ a:hover {
     color: #555;
 }
 
-.button-primary {
-    background-color: #e09ebf;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: 600;
-    margin-top: 20px;
-    transition: background-color 0.3s ease-in-out;
-    display: inline-block; /* Ensures the button doesn’t take up full width */
-    text-align: center; /* Centers text inside button */
-}
 
-.button-primary:hover {
-    background-color: #d45a76;
-}
 .categories {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* Three equal-width columns */
@@ -249,4 +232,13 @@ footer {
       font-size: 14px;
       padding: 6px 12px;
     }
+    .categories {
+      justify-content: center; /* Center-align on mobile */
+      gap: 5px; /* Reduce gap between buttons */
+  }
+
+  .categories input[type="submit"] {
+      font-size: 14px; /* Reduce font size for smaller screens */
+      padding: 6px 10px; /* Smaller padding */
+  }
   }
