@@ -197,6 +197,9 @@ footer {
     .content {
       width: 100%;
       padding: 15px;
+      word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+  overflow-wrap: break-word; /* Modern equivalent of word-wrap */
+  white-space: normal; /* Allows text to wrap normally */
     }
   
     .info h1 {
@@ -237,6 +240,9 @@ footer {
   transition: max-height 0.3s ease; /* Smooth transition */
   position: relative;
   cursor: pointer; /* Change cursor to pointer */
+  word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+  overflow-wrap: break-word; /* Modern equivalent of word-wrap */
+  white-space: normal; /* Allows text to wrap normally */
 }
 
 .comment-content.expanded {
@@ -247,9 +253,22 @@ footer {
 .comment-content:hover {
     max-height: none; /* Expand on hover */
     cursor: pointer; /* Change cursor to pointer */
+    word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+  overflow-wrap: break-word; /* Modern equivalent of word-wrap */
+  white-space: normal; /* Allows text to wrap normally */
 }
 
 .divider {
     border: 1px solid #264143;
     margin: 20px 0;
+}
+
+.comment-text, .content p {
+  word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+  overflow-wrap: break-word; /* Modern equivalent of word-wrap */
+  white-space: normal; /* Allows text to wrap normally */
+}
+
+.comment-content {
+  margin-bottom: 20px; /* Adds space between comments */
 }

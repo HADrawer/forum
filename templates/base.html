@@ -47,17 +47,29 @@
                 <div class="sidebar">
                     <h2>Categories</h2>
                     <ul>
-                        <form action="/CategoryViewer"  method="post">
-                        <div class="categories">
-                            {{range .Catagories}}
-                          <input type="submit" name="Catagory" value= {{.Catagory}}>
-                          {{end}}
+                        
+                         
                         </div>
                     </form>
                     </ul>
                 </div>
             </div>
         </div>
+        {{range .Catagories}}
+        <div class="content">
+            <div class="info">
+                <div class="sidebar">
+                    <ul>
+                        <form action="/CategoryViewer"  method="post">
+                        <div class="categories">
+                          <input type="submit" name="Catagory" value= {{.Catagory}}>
+                        </div>
+                    </form>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {{end}}
     </main>
     <footer>
         <p>&copy; Forum 2024 </p>

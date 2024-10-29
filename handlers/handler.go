@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"Forum/models"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -51,10 +52,21 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	pageData["Catagories"] = postDetails
 
 	// Render the template with base.html as the layout
+	if pageData == nil {
+		templates, err := template.ParseFiles("templates/500.html")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Error loading 500 template:", err)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		templates.Execute(w, nil)
+		return
+	}
 	err1 := templates.ExecuteTemplate(w, "base.html", pageData)
 	if err1 != nil {
 		log.Print(err)
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
+		http.Error(w, "Internal server error ", http.StatusInternalServerError)
 	}
 
 }
@@ -143,37 +155,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 //-----------------------------------------------------------------------
 
-// func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
-// 	userID, loggedIn := GetUserIDFromSession(r)
-// 	if !loggedIn {
-// 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-// 		return
-// 	}
-// 	if r.Method == http.MethodGet {
-// 		RenderTemplate(w, "createPost", nil)
-// 	} else if r.Method == http.MethodPost {
 
-// 		title := r.FormValue("title")
-
-// 		content := r.FormValue("content")
-
-// 		categories := r.Form["categories[]"]
-
-// 		stringCategories := strings.Join(categories, ",")
-
-//			err := models.CreatePost(userID, title, content, stringCategories)
-//			if err != nil {
-//				http.Error(w, "Unable to create post", http.StatusInternalServerError)
-//				return
-//			}
-//			http.Redirect(w, r, "/", http.StatusSeeOther)
-//		}
-//	}
 func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	
 	userID, loggedIn := GetUserIDFromSession(r)
 	if !loggedIn {
 		http.Redirect(w, r, "/login", http.StatusSeeOther) // 303
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
 		return
 	}
 
@@ -220,6 +211,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			
 			RenderTemplate(w, "createPost", pageData) // 400
 			return
+
 		}
 
 		// Attempt to create the post
