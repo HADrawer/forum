@@ -179,7 +179,17 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 		
-		RenderTemplate(w, "createPost", nil)
+		Catagories, _ := models.GetAllCategories()
+		pageData := make(map[string]interface{})
+		var postDetails []map[string]interface{}
+	for _, Catagory := range Catagories {
+		postDetail := map[string]interface{}{
+			"Catagory": Catagory.Name,
+		}
+		postDetails = append(postDetails, postDetail)
+	}
+		pageData["Catagories"] = postDetails
+		RenderTemplate(w, "createPost", pageData)
 		
 		return
 	}
@@ -188,12 +198,26 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		content := r.FormValue("content")
 		categories := r.Form["categories[]"]
 		stringCategories := strings.Join(categories, ",")
+		
+
+
+	
 
 		// Check if title and content are provided
 		if title == "" || content == "" || len(categories) == 0 {
-			pageData := map[string]interface{}{
-				"InvalidPost": "Please fill out this field",
-			}
+
+			Catagories, _ := models.GetAllCategories()
+		pageData := make(map[string]interface{})
+		var postDetails []map[string]interface{}
+	for _, Catagory := range Catagories {
+		postDetail := map[string]interface{}{
+			"Catagory": Catagory.Name,
+		}
+		postDetails = append(postDetails, postDetail)
+	}
+		pageData["Catagories"] = postDetails
+		pageData["InvalidPost"]= "Please fill out this field"
+			
 			RenderTemplate(w, "createPost", pageData) // 400
 			return
 		}
