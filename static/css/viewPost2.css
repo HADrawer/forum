@@ -100,7 +100,7 @@ a:hover {
 
 /* Header styling similar to create post page */
 h1 {
-    font-size: 2.5rem;
+    font-size: 3.5rem;
     font-weight: 700;
     text-align: center;
     color: #131212;
@@ -110,8 +110,8 @@ h1 {
     display:contents;
     background-color: #DE5499;
     color: rgb(22, 21, 21);
-    padding: 15px;
-    font-size: 18px;
+    padding: 10px;
+    font-size: 20px;
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
@@ -158,7 +158,7 @@ textarea {
 
 /* Styling for comment section */
 h2 {
-    font-size: 24px;
+    font-size: 40px;
     font-weight: 600;
     color: #131212;
     margin-top: 20px;
