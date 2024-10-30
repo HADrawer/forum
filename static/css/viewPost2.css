@@ -96,9 +96,10 @@ a:hover {
     margin-top: 150px;
     margin-left: auto;
     margin-right: auto;
+    size:30px ;
 }
 
-/* Header styling similar to create post page */
+
 h1 {
     font-size: 3.5rem;
     font-weight: 700;
@@ -106,21 +107,39 @@ h1 {
     color: #131212;
     margin-bottom: 20px;
 }
-.like{
-    display:contents;
-    background-color: #DE5499;
-    color: rgb(22, 21, 21);
-    padding: 10px;
-    font-size: 20px;
-    border-radius: 10px;
-    font-weight: 700;
+
+/* CSS for custom like and dislike buttons */
+.reaction-buttons .like,
+.reaction-buttons .dislike {
+    font-size: 14px;
+    padding: 8px 12px;
+    margin: 5px;
+    color: #0e0d0d;
+    background-color: #ea70ad;
+    border: 2px solid #264143;
+    border-radius: 5px;
+    box-shadow: 3px 4px 0px 1px #E99F4C;
+    font-family: Tahoma, sans-serif;
     cursor: pointer;
-    width: 100%;
-    text-align: center;
-    box-shadow: 3px 3px 0px 0px #E99F4C;
-    margin-top: 10px;
-    transition: background-color 0.3s ease-in-out; 
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
+
+.reaction-buttons .like:hover {
+    color: #4d14ab;
+}
+
+.reaction-buttons .dislike:hover {
+    color: #950110;
+}
+
+.reaction-buttons .like .counter,
+.reaction-buttons .dislike .counter {
+    font-weight: bold;
+    color: #070707;
+}
+
 
 
 /* Styling for the comment form and submit button */

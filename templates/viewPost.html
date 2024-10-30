@@ -30,19 +30,32 @@
         {{if .isExist}}
             <div class="content">
                 <div class="info">
+                 
                     <h1>{{.Title}}</h1>
-                    <p>Content: {{.Content}}</p>
+                
+                    <h3>Content:</h3>
+                    <p> {{.Content}}</p>
+                
                     <p>Author: {{.Author}}</p>
 
                     <div class="reaction-buttons">
                         {{if .IsLoggedIn}}
-                            <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=1'">Like {{.likes}}</button>
-                            <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=-1'">Dislike {{.DisLikes}}</button>
+                            <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=1'">
+                                Like <span class="counter">{{.likes}}</span>
+                            </button>
+                            <button class="dislike" onclick="location.href='/Like?post_id={{.id}}&like=-1'">
+                                Dislike <span class="counter">{{.DisLikes}}</span>
+                            </button>
                         {{else}}
-                            <button class="like" onclick="location.href='/login'">Like {{.likes}}</button>
-                            <button class="like" onclick="location.href='/login'">Dislike {{.DisLikes}}</button>
+                            <button class="like" onclick="location.href='/login'">
+                                Like <span class="counter">{{.likes}}</span>
+                            </button>
+                            <button class="dislike" onclick="location.href='/login'">
+                                Dislike <span class="counter">{{.DisLikes}}</span>
+                            </button>
                         {{end}}
                     </div>
+                 
                     {{if .IsLoggedIn}}
                     <h2>Add a Comment</h2>
                     <form action="/Comment" method="post">
