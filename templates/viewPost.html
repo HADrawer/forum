@@ -80,6 +80,24 @@
                                     <p class="comment-text">{{.comment}}</p>
                                 </div>
                                 <h6>{{.created_at}}</h6>
+
+                                <div class="reaction-buttons">
+                                    {{if .IsLoggedIn}}
+                                        <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=1'">
+                                            Like <span class="counter">{{.likes}}</span>
+                                        </button>
+                                        <button class="dislike" onclick="location.href='/Like?post_id={{.id}}&like=-1'">
+                                            Dislike <span class="counter">{{.DisLikes}}</span>
+                                        </button>
+                                    {{else}}
+                                        <button class="like" onclick="location.href='/login'">
+                                            Like <span class="counter">{{.likes}}</span>
+                                        </button>
+                                        <button class="dislike" onclick="location.href='/login'">
+                                            Dislike <span class="counter">{{.DisLikes}}</span>
+                                        </button>
+                                    {{end}}
+                                </div>
                             </div>
                         {{end}}
                         </ul>
