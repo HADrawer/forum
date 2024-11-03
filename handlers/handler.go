@@ -42,14 +42,50 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
 		return
 	}
-	var postDetails []map[string]interface{}
+	var CatagoryDetails []map[string]interface{}
 	for _, Catagory := range Catagories {
-		postDetail := map[string]interface{}{
+		CatagoryDetail := map[string]interface{}{
 			"Catagory": Catagory.Name,
+		}
+		CatagoryDetails = append(CatagoryDetails, CatagoryDetail)
+	}
+	pageData["Catagories"] = CatagoryDetails
+
+
+
+
+	posts, err := models.GetAllPosts()
+	if err != nil {
+		http.Error(w, "Unable to load posts", http.StatusInternalServerError) // 500
+		return
+	}
+	isExist := true
+	if posts == nil {
+		isExist = false
+	}
+
+	// Render the template with posts
+	var postDetails []map[string]interface{}
+	for _, post := range posts {
+		postDetail := map[string]interface{}{
+			"Id":         post.ID,
+			"Author":     post.Author,
+			"Title":      post.Title,
+			"created_at": post.Created_at,
 		}
 		postDetails = append(postDetails, postDetail)
 	}
-	pageData["Catagories"] = postDetails
+	
+	pageData["isExist"] = isExist
+	pageData["IsLoggedIn"] = isLoggedIn
+	pageData["Title"] = "Liked"
+	if isExist == false {
+		pageData["NoPosts"] = "No Liked posts found."
+	}
+	pageData["Posts"] = postDetails
+
+
+	
 
 	// Render the template with base.html as the layout
 	if pageData == nil {

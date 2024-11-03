@@ -53,6 +53,26 @@
                 </div>
             </div>
         </div>
+        {{if .isExist}}
+
+    {{range .Posts}}
+    <div class="content">
+    <div class="info">
+        <a href="/Post?id={{.Id}}"><h3>{{ .Title }}</h3></a>
+        <p>Posted By {{.Author}}</p>
+        <h5>{{.created_at}}</h5>
+    
+        
+        </div>
+        </div>
+    {{end}}
+    {{else}}
+    <div class="content">
+        <div class="info">
+    <h1>{{.NoPosts}}</h1>
+</div>
+</div>
+    {{end}}
     </main>
     <footer>
         <p>&copy; Forum 2024 </p>

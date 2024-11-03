@@ -1,9 +1,11 @@
 package handlers
+
 import (
-	"time"
-    "github.com/google/uuid"
 	"net/http"
-    // "strconv"
+	"time"
+
+	"github.com/google/uuid"
+	// "strconv"
 )
 var sessions = map[string]string{} // key is the session ID, value is the user ID
 
@@ -30,7 +32,7 @@ func GetUserIDFromSession(r *http.Request) (string, bool) {
     if err != nil {
         return "", false
     }
-
+    
     // Check if session ID exists in the session store
     userID, exists := sessions[cookie.Value]
     if !exists {

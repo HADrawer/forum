@@ -339,6 +339,9 @@ func GetPostsFromUserID(userID string) ([]Post, error) {
 
 	return posts, nil
 }
+
+
+
 func GetPostsFromLiked(userID string) ([]Post, error) {
 	var posts []Post
 	user , _ := GetUserByUserName(userID)
