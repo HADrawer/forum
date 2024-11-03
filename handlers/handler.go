@@ -379,11 +379,18 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Populate comments for the template
 	var CommentDetails []map[string]interface{}
 	for _, comment := range comments {
+		// CommentlikeCount , _ := models.CommentLikeCounter(id)
+		// CommentDislikeCount , _ := models.CommentDisLikeCounter(id)
 		commentDetail := map[string]interface{}{
+			"id":			 comment.ID,
 			"Author":        comment.Author,
 			"comment":       comment.Content,
 			"created_at":    comment.Created_at,
 			"CommentUserID": comment.User_ID,
+			"IsLoggedIn": 	isLoggedIn,
+			// "likes" : 		CommentlikeCount,
+			// "DisLikes" : 	CommentDislikeCount,
+
 		}
 		CommentDetails = append(CommentDetails, commentDetail)
 	}
@@ -508,38 +515,38 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := GetUserIDFromSession(r)
-	postID := r.URL.Query().Get("post_id")
+	commentID := r.URL.Query().Get("Comment_id")
 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
 
 	// Logic to update the like/dislike in the database
-	if postID == "" || (like != "1" && like != "-1") {
-		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
+	if commentID == "" || (like != "1" && like != "-1") {
+		http.Error(w, "Invalid like or comment ID", http.StatusBadRequest) // 400 Bad Request
 		return
 	}
 
 	if like == "1" {
-		if models.IsLike(postID, userID) {
-			models.RemoveLike(postID, userID)
+		if models.CommentIsLike(commentID, userID) {
+			models.CommentRemoveLike(commentID, userID)
 			
-		} else if models.IsDisLike(postID, userID) {
-			models.UpdateLike(postID, userID, "1")
+		} else if models.CommentIsDisLike(commentID, userID) {
+			models.CommentUpdateLike(commentID, userID, "1")
 
 		} else {
-			models.AddLike(postID, userID, "1")
+			models.CommentAddLike(commentID, userID, "1")
 		}
 	} else if like == "-1" {
-		if models.IsDisLike(postID, userID) {
-			models.RemoveLike(postID, userID)
+		if models.CommentIsDisLike(commentID, userID) {
+			models.CommentRemoveLike(commentID, userID)
 
-		} else if models.IsLike(postID, userID) {
-			models.UpdateLike(postID, userID, "-1")
+		} else if models.CommentIsLike(commentID, userID) {
+			models.CommentUpdateLike(commentID, userID, "-1")
 
 		} else {
-			models.AddLike(postID, userID, "-1")
+			models.CommentAddLike(commentID, userID, "-1")
 		}
 	}
 
-	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
+
 }
 
 //-----------------------------------------------------------------------

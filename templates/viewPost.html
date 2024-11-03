@@ -83,10 +83,10 @@
 
                                 <div class="reaction-buttons">
                                     {{if .IsLoggedIn}}
-                                        <button class="like" onclick="location.href='/Like?post_id={{.id}}&like=1'">
+                                        <button class="like" onclick="location.href='/CommentLike?Comment_id={{.id}}&like=1'">
                                             Like <span class="counter">{{.likes}}</span>
                                         </button>
-                                        <button class="dislike" onclick="location.href='/Like?post_id={{.id}}&like=-1'">
+                                        <button class="dislike" onclick="location.href='/CommentLike?Comment_id={{.id}}&like=-1'">
                                             Dislike <span class="counter">{{.DisLikes}}</span>
                                         </button>
                                     {{else}}
