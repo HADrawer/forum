@@ -225,6 +225,32 @@ footer {
     box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.comment-content {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Limit to 3 lines */
+    overflow: hidden;
+    margin-bottom: 5px;
+    transition: max-height 0.3s ease; /* Smooth transition */
+    position: relative;
+    cursor: pointer; /* Change cursor to pointer */
+    word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+    overflow-wrap: break-word; /* Modern equivalent of word-wrap */
+    white-space: normal; /* Allows text to wrap normally */
+  }
+  
+  .comment-content.expanded {
+    -webkit-line-clamp: unset; /* Remove line limit */
+    max-height: none; /* Allow full height */
+  }
+  
+  .comment-content:hover {
+      max-height: none; /* Expand on hover */
+      cursor: pointer; /* Change cursor to pointer */
+      word-wrap: break-word; /* Allows long words to break and wrap to the next line */
+    overflow-wrap: break-word; /* Modern equivalent of word-wrap */
+    white-space: normal; /* Allows text to wrap normally */
+  }
 
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {

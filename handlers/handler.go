@@ -25,8 +25,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 
 // BaseHandler serves pages with the base layout (base.html)
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Redirect(w, r, "/", http.StatusFound)
+	if r.URL.Path != "/" &&  r.URL.Path != "/home" {
+		w.WriteHeader(http.StatusNotFound) // Set the 404 status code
+		RenderTemplate(w, "404", nil)      // Render custom 404 page
 		return
 	}
 	userID, isLoggedIn := GetUserIDFromSession(r)
@@ -468,6 +469,44 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func LikeHandler(w http.ResponseWriter, r *http.Request) {
+	userID, _ := GetUserIDFromSession(r)
+	postID := r.URL.Query().Get("post_id")
+	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
+
+	// Logic to update the like/dislike in the database
+	if postID == "" || (like != "1" && like != "-1") {
+		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
+		return
+	}
+
+	if like == "1" {
+		if models.IsLike(postID, userID) {
+			models.RemoveLike(postID, userID)
+			
+		} else if models.IsDisLike(postID, userID) {
+			models.UpdateLike(postID, userID, "1")
+
+		} else {
+			models.AddLike(postID, userID, "1")
+		}
+	} else if like == "-1" {
+		if models.IsDisLike(postID, userID) {
+			models.RemoveLike(postID, userID)
+
+		} else if models.IsLike(postID, userID) {
+			models.UpdateLike(postID, userID, "-1")
+
+		} else {
+			models.AddLike(postID, userID, "-1")
+		}
+	}
+
+	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
+}
+
+//-----------------------------------------------------------------------
+
+func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := GetUserIDFromSession(r)
 	postID := r.URL.Query().Get("post_id")
 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
