@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"strings"
 
+	"os"
+	"path/filepath"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,6 +19,14 @@ var templates = template.Must(template.ParseGlob("templates/*.html"))
 // renderTemplate helper function
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 	
+	tmplPath := filepath.Join("templates", tmpl+".html")
+
+    // Check if the template file exists
+    if _, err := os.Stat(tmplPath); os.IsNotExist(err) {
+        http.NotFound(w, nil) // Return a 404 if the file is missing
+        return
+    }
+
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		log.Print(err)

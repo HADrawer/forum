@@ -543,11 +543,13 @@ func CommentAddLike(commentID, userID, Liked string) {
 	user, _ := GetUserByUserName(userID)
 	stat.Exec(commentID, user.ID, Liked)
 }
+
 func CommentRemoveLike(postID, userID string) {
-	stat, _ := db.Prepare("DELETE FROM commentlikes WHERE post_id = ? AND user_id = ?")
-	user, _ := GetUserByUserName(userID)
-	stat.Exec(commentID, user.ID)
+    stat, _ := db.Prepare("DELETE FROM commentlikes WHERE comment_id = ? AND user_id = ?")
+    user, _ := GetUserByUserName(userID)
+    stat.Exec(postID, user.ID)
 }
+
 func CommentUpdateLike(postID, userID, Liked string) {
 	statement, _ := db.Prepare("UPDATE commentlikes SET is_like = ? WHERE comment_id = ? AND user_id = ?")
 	user, _ := GetUserByUserName(userID)
