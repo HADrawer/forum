@@ -29,16 +29,21 @@
         </nav>
         
         <div class="content-wrapper">
-            <!-- Categories Section (Left) -->
-            <div class="sidebar">
-                <h2>Categories</h2>
-                <form action="/CategoryViewer" method="post">
-                    <div class="categories">
-                        {{range .Catagories}}
-                            <input type="submit" name="Catagory" value="{{.Catagory}}">
-                        {{end}}
-                    </div>
-                </form>
+            <div class="info">
+                <h1>Welcome to the Forum</h1>
+                <p>A place where you can share your ideas</p>
+                <div class="sidebar">
+                    <h2>Categories</h2>
+                    <ul>
+                        <form action="/CategoryViewer"  method="post">
+                        <div class="categories">
+                            {{range .Catagories}}
+                          <input type="submit" name="Catagory" value= {{.Catagory}}>
+                          {{end}}
+                        </div>
+                    </form>
+                    </ul>
+                </div>
             </div>
             
             <!-- Posts Section (Right) -->
