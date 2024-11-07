@@ -5,19 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="/static/css/register.css">
+    <script>
+        function validateForm() {
+            var username = document.getElementById("username").value;
+            var errorMessage = document.getElementById("usernameError");
+
+            if (username.includes(" ")) {
+                errorMessage.style.display = "block";
+                errorMessage.innerText = "Username cannot contain spaces.";
+                return false; // Prevent form submission
+            } else {
+                errorMessage.style.display = "none"; // Hide error message
+                return true; // Allow form submission
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="form_area">
             <p class="title">SIGN UP</p>
-            <form action="/register" method="post">
+            <form action="/register" method="post" onsubmit="return validateForm()">
                 <div class="form_group">
-                    <label class="sub_title" for="name">Username</label>
-                    <input placeholder="Enter your full name" name="username" class="form_style" type="text" required>
+                    <label class="sub_title" for="username">Username</label>
+                    <input placeholder="Enter your full name" id="username" name="username" class="form_style" type="text" required>
+                    <span id="usernameError" style="color:red; display:none;"></span>
                 </div>
                 <div class="form_group">
                     <label class="sub_title" for="email">Email</label>
-                    <input placeholder="Enter your email" id="email" name="email" class="form_style" type="email" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" >
+                    <!-- Updated regex to require a dot after the @ symbol -->
+                    <input placeholder="example@example.example" id="email" name="email" class="form_style" type="email" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Please enter a valid email address, e.g. example@example.example">
                 </div>
                 <div class="form_group">
                     <label class="sub_title" for="password">Password</label>
@@ -26,11 +43,10 @@
                 </div>
                 <div>
                     <button class="btn">SIGN UP</button>
-                    <p>Have an Account? <a class="link" href="login">Login Here!</a></p><a class="link" href="">
-                </a></div>
-                <a class="link" href="login">
-    
-        </a>
-    </form>
+                    <p>Have an Account? <a class="link" href="login">Login Here!</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
