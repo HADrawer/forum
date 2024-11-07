@@ -132,8 +132,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		// Validate inputs
 		if email == "" || username == "" || password == "" {
-			http.Error(w, "All fields are required", http.StatusBadRequest)
+
+			t, err := template.ParseFiles("templates/500.html")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Error loading 500 template:", err)
 			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		t.Execute(w, nil)
+		return
+		
 		}
 		// Hash the password
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

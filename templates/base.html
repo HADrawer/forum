@@ -4,78 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>home</title>
+    <title>Home</title>
     <link rel="stylesheet" href="/static/css/base.css">
-  
 </head>
 
 <body>
-    
     <main>
         <nav class="navbar">
-            <a href="/" class="logo"><i ></i> Fourm</a>
-            
+            <a href="/" class="logo"><i></i> Forum</a>
             <ul>
                 <li><a href="home"><i class="fa fa-home"></i> Home</a></li>
                 
                 {{if .IsLoggedIn}}
-
-                     
                     <li><a href="/createPost">Create Post</a></li>
                     <li><a href="/myposts">Created Post</a></li>
                     <li><a href="/LikedPosts">Liked Posts</a></li>
-                
-                    <li><a style="margin-left: 40px;" href="/logout"> <i class="fa fa-sign-out"></i> Logout</a></li>
-                   
+                    <li><a style="margin-left: 40px;" href="/logout"><i class="fa fa-sign-out"></i> Logout</a></li>
                 {{else}}
                     <li><a href="/register">Register</a></li>
                     <li><a href="/login">Login</a></li>
-                    
                 {{end}}
             </ul>
             <h1 class="UserID">{{.UserID}}</h1>
         </nav>
-        <div class="content">
-            <div class="info">
-                <h1>Welcome to the Forum</h1>
-                <p>A place where you can share your ideas</p>
-                <div class="sidebar">
-                    <h2>Categories</h2>
-                    <ul>
-                        <form action="/CategoryViewer"  method="post">
-                        <div class="categories">
-                            {{range .Catagories}}
-                          <input type="submit" name="Catagory" value= {{.Catagory}}>
-                          {{end}}
+        
+        <div class="content-wrapper">
+            <!-- Categories Section (Left) -->
+            <div class="sidebar">
+                <h2>Categories</h2>
+                <form action="/CategoryViewer" method="post">
+                    <div class="categories">
+                        {{range .Catagories}}
+                            <input type="submit" name="Catagory" value="{{.Catagory}}">
+                        {{end}}
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Posts Section (Right) -->
+            <div class="posts">
+                {{if .isExist}}
+                    {{range .Posts}}
+                        <div class="content">
+                            <div class="info">
+                                <a href="/Post?id={{.Id}}"><h3>{{.Title}}</h3></a>
+                                <p>Posted By {{.Author}}</p>
+                                <h5>{{.created_at}}</h5>
+                            </div>
                         </div>
-                    </form>
-                    </ul>
-                </div>
+                    {{end}}
+                {{else}}
+                    <div class="content">
+                        <div class="info">
+                            <h1>{{.NoPosts}}</h1>
+                        </div>
+                    </div>
+                {{end}}
             </div>
         </div>
-        {{if .isExist}}
-
-    {{range .Posts}}
-    <div class="content">
-    <div class="info">
-        <a href="/Post?id={{.Id}}"><h3>{{ .Title }}</h3></a>
-        <p>Posted By {{.Author}}</p>
-        <h5>{{.created_at}}</h5>
-    
-        
-        </div>
-        </div>
-    {{end}}
-    {{else}}
-    <div class="content">
-        <div class="info">
-    <h1>{{.NoPosts}}</h1>
-</div>
-</div>
-    {{end}}
     </main>
+    
     <footer>
-        <p>&copy; Forum 2024 </p>
+        <p>&copy; Forum 2024</p>
     </footer>
 </body>
 </html>
