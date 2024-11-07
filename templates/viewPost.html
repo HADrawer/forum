@@ -61,7 +61,7 @@
                     <h2>Add a Comment</h2>
                     <form action="/Comment" method="post">
                         <input name="PostID" value="{{.id}}" type="hidden">
-                        <textarea name="PostComment" placeholder="Write Your Comment here" required></textarea><br>
+                        <textarea name="PostComment" placeholder="Write Your Comment here" maxlength="250" required></textarea><br>
                         <input type="submit" class="button-primary" value="Add Comment">
                     </form>
                 {{else}}
