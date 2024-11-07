@@ -92,7 +92,18 @@ a:hover {
     font-weight: 500;
     padding: 5px 0;
 }
-
+.info{
+  position:sticky;
+  margin: 120px auto 50px 50px; 
+  padding: 50px;
+  background-color:rgba(245, 185, 185, 0.9);
+  border-radius: 20px;
+  border: 2px solid #264143;
+  box-shadow: 3px 4px 0px 1px #E99F4C;
+  color: #312f2f;
+  width: 90%;  
+  max-width: 900px; 
+}
 .content-wrapper {
     display: flex;
     justify-content: space-between;
