@@ -265,7 +265,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		// Attempt to create the post
 		err := models.CreatePost(userID, title, content, stringCategories)
 		if err != nil {
-			http.Error(w, "Unable to create post", http.StatusInternalServerError) // 500
+			http.Error(w, err.Error() , http.StatusInternalServerError) // 500
 			return
 		}
 
@@ -387,11 +387,13 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	// Populate comments for the template
 	var CommentDetails []map[string]interface{}
 	for _, comment := range comments {
-		// CommentlikeCount , _ := models.CommentLikeCounter(id)
-		// CommentDislikeCount , _ := models.CommentDisLikeCounter(id)
+		
+		CommentlikeCount , _ := models.CommentLikeCounter(string(comment.ID))
+		CommentDislikeCount , _ := models.CommentDisLikeCounter(string(comment.ID))
 		commentDetail := map[string]interface{}{
 			"id":			 comment.ID,
 			"Author":        comment.Author,
@@ -399,14 +401,14 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 			"created_at":    comment.Created_at,
 			"CommentUserID": comment.User_ID,
 			"IsLoggedIn": 	isLoggedIn,
-			// "likes" : 		CommentlikeCount,
-			// "DisLikes" : 	CommentDislikeCount,
+			"likes" : 		CommentlikeCount,
+			"DisLikes" : 	CommentDislikeCount,
 
 		}
 		CommentDetails = append(CommentDetails, commentDetail)
 	}
 	likeCount , _ := models.LikeCounter(id)
-	DislikeCount , _ := models.DisLikeCounter(id)
+	DislikeCount , _ := models.DisLikeCounter(id)	
 	// Prepare page data with post details and comments
 	pageData := make(map[string]interface{})
 	pageData["id"] = id

@@ -142,7 +142,7 @@ h1 {
 
 
 
-/* Styling for the comment form and submit button */
+/* Styling for the ft form and submit button */
 textarea {
     width: 100%;
     padding: 15px;
@@ -194,6 +194,20 @@ h2 {
 }
 
 .comment-box h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #312f2f;
+}
+.Post-box {
+    background-color: rgba(245, 185, 185, 0.7);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    border: 1px solid #264143;
+    box-shadow: 2px 3px 0px 0px #E99F4C;
+}
+
+.Post-box h3 {
     font-size: 18px;
     font-weight: 600;
     color: #312f2f;

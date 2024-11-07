@@ -30,11 +30,11 @@
         {{if .isExist}}
             <div class="content">
                 <div class="info">
-                 
+                    <div class="comment-box">
                     <h1>{{.Title}}</h1>
                 
                     <h3>Content:</h3>
-                    <p> {{.Content}}</p>
+                    <p onclick="this.classList.toggle('expanded');"> {{.Content}}</p>
                 
                     <p>Author: {{.Author}}</p>
 
@@ -55,6 +55,7 @@
                             </button>
                         {{end}}
                     </div>
+                </div>
                  
                     {{if .IsLoggedIn}}
                     <h2>Add a Comment</h2>
@@ -74,7 +75,7 @@
                     {{if .Comments}}
                         <ul>
                         {{range .Comments}}
-                            <div class="comment-box">
+                            <div class="Post-box">
                                 <h3>{{.Author}}</h3>
                                 <div class="comment-content" onclick="this.classList.toggle('expanded');">
                                     <p class="comment-text">{{.comment}}</p>
@@ -83,10 +84,10 @@
 
                                 <div class="reaction-buttons">
                                     {{if .IsLoggedIn}}
-                                        <button class="like" onclick="location.href='/CommentLike?Comment_id={{.id}}&like=1'">
+                                        <button class="like" onclick="location.href='/CommentLike?Comment_id={{.CommentID}}&like=1'">
                                             Like <span class="counter">{{.likes}}</span>
                                         </button>
-                                        <button class="dislike" onclick="location.href='/CommentLike?Comment_id={{.id}}&like=-1'">
+                                        <button class="dislike" onclick="location.href='/CommentLike?Comment_id={{.CommentID}}&like=-1'">
                                             Dislike <span class="counter">{{.DisLikes}}</span>
                                         </button>
                                     {{else}}

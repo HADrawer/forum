@@ -53,8 +53,9 @@ type Like struct {
 	UserID string
 	IsLike string
 }
-type commentLike struct {
+type CommentLike struct {
 	ID     int
+	CommentID string
 	UserID string
 	IsLike string
 }
@@ -125,6 +126,7 @@ func CreateTables() {
         FOREIGN KEY(comment_id) REFERENCES comments(id),
         FOREIGN KEY(user_id) REFERENCES users(id)
     );
+	
     CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT UNIQUE NOT NULL
@@ -234,8 +236,8 @@ func GetAllCategoryPosts(isCategory string) ([]Post, error) {
 func GetPostByID(postID string) (*Post, error) {
 	var post Post
 	var createdAt time.Time
-	err := db.QueryRow("SELECT id ,user_id, title, content ,Author ,likes,Dislikes, created_at FROM posts WHERE id = ?", postID).
-		Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Author,&post.Likes,&post.Dislikes, &createdAt)
+	err := db.QueryRow("SELECT id ,user_id, title, content ,Author , created_at FROM posts WHERE id = ?", postID).
+		Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.Author, &createdAt)
 	if err != nil {
 		return nil, errors.New("post not found")
 	}
@@ -245,12 +247,12 @@ func GetPostByID(postID string) (*Post, error) {
 
 // Create post
 func CreatePost(userID, title, content, categories string) error {
-	stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content ,Author, Category,likes,Dislikes) VALUES(?, ?, ?,?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO posts (user_id, title, content ,Author, Category) VALUES(?, ?, ?,?,?)")
 	if err != nil {
 		return err
 	}
 	user, _ := GetUserByUserName(userID)
-	_, err = stmt.Exec(user.ID, title, content, user.Username, categories,0,0)
+	_, err = stmt.Exec(user.ID, title, content, user.Username, categories)
 	return err
 }
 func CreateComment(userID, postID, comment string) error {
@@ -459,60 +461,16 @@ func IsDisLike(postID, userID string) bool {
 	}
 	return false
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-func CommentLikeCounter(postID string) (int ,error){
-	var likes []Like
-	rows, err := db.Query("SELECT is_like  FROM commentlikes WHERE post_id = ? AND is_like = 1 ", postID)
+func CommentLikeCounter(CommentID string) (int ,error){
+	var likes []CommentLike
+	rows, err := db.Query("SELECT is_like  FROM Commentlikes WHERE comment_id = ? AND is_like = 1 ", CommentID)
 if err != nil {
 	return 0, errors.New(" not found")
 }
 defer rows.Close()
 
 	for rows.Next() {
-		var like Like
+		var like CommentLike
 		if err := rows.Scan(&like.IsLike); err != nil {
 			return 0, err
 		}
@@ -520,16 +478,16 @@ defer rows.Close()
 	}
 return len(likes), nil
 }
-func CommentDisLikeCounter(postID string) (int ,error){
-	var likes []Like
-	rows, err := db.Query("SELECT is_like  FROM commentlikes WHERE post_id = ? AND is_like = -1 ", postID)
+func CommentDisLikeCounter(CommentID string) (int ,error){
+	var likes []CommentLike
+	rows, err := db.Query("SELECT is_like  FROM Commentlikes WHERE comment_id = ? AND is_like = -1 ", CommentID)
 	if err != nil {
 		return 0, errors.New(" not found")
 	}
 	defer rows.Close()
 	
 		for rows.Next() {
-			var like Like
+			var like CommentLike
 			if err := rows.Scan(&like.IsLike); err != nil {
 				return 0, err
 			}
@@ -538,28 +496,26 @@ func CommentDisLikeCounter(postID string) (int ,error){
 	return len(likes), nil
 }
 
-func CommentAddLike(commentID, userID, Liked string) {
-	stat, _ := db.Prepare("INSERT INTO commentlikes (comment_id,user_id, is_like) VALUES (?,?,?)")
+func CommentAddLike(CommentID, userID, Liked string) {
+	stat, _ := db.Prepare("INSERT INTO Commentlikes (comment_id , user_id, is_like) VALUES (?,?,?)")
 	user, _ := GetUserByUserName(userID)
-	stat.Exec(commentID, user.ID, Liked)
+	stat.Exec(CommentID, user.ID, Liked)
+}
+func CommentRemoveLike(CommentID, userID string) {
+	stat, _ := db.Prepare("DELETE FROM Commentlikes WHERE comment_id = ? AND user_id = ?")
+	user, _ := GetUserByUserName(userID)
+	stat.Exec(CommentID, user.ID)
+}
+func CommentUpdateLike(CommentID, userID, Liked string) {
+	statement, _ := db.Prepare("UPDATE Commentlikes SET is_like = ? WHERE comment_id = ? AND user_id = ?")
+	user, _ := GetUserByUserName(userID)
+	statement.Exec(Liked, CommentID, user.ID)
 }
 
-func CommentRemoveLike(postID, userID string) {
-    stat, _ := db.Prepare("DELETE FROM commentlikes WHERE comment_id = ? AND user_id = ?")
-    user, _ := GetUserByUserName(userID)
-    stat.Exec(postID, user.ID)
-}
-
-func CommentUpdateLike(postID, userID, Liked string) {
-	statement, _ := db.Prepare("UPDATE commentlikes SET is_like = ? WHERE comment_id = ? AND user_id = ?")
-	user, _ := GetUserByUserName(userID)
-	statement.Exec(Liked, postID, user.ID)
-}
-
-func CommentIsLike(postID, userID string) bool {
+func CommentIsLike(CommentID, userID string) bool {
 	user, _ := GetUserByUserName(userID)
 
-	rows, _ := db.Query("SELECT is_like FROM likes WHERE user_id = ? AND post_id = ? AND is_like = 1", user.ID, postID)
+	rows, _ := db.Query("SELECT is_like FROM Commentlikes WHERE user_id = ? AND comment_id = ? AND is_like = 1", user.ID, CommentID)
 	like := 0
 	for rows.Next() {
 		rows.Scan(&like)
@@ -569,10 +525,10 @@ func CommentIsLike(postID, userID string) bool {
 	}
 	return false
 }
-func CommentIsDisLike(postID, userID string) bool {
+func CommentIsDisLike(CommentID, userID string) bool {
 	user, _ := GetUserByUserName(userID)
 
-	rows, _ := db.Query("SELECT is_like FROM likes WHERE user_id = ? AND post_id = ? AND is_like = -1", user.ID, postID)
+	rows, _ := db.Query("SELECT is_like FROM Commentlikes WHERE user_id = ? AND comment_id = ? AND is_like = -1", user.ID, CommentID)
 	like := 0
 	for rows.Next() {
 		rows.Scan(&like)
