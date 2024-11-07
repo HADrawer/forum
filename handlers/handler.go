@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"os"
@@ -392,9 +393,11 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	var CommentDetails []map[string]interface{}
 	for _, comment := range comments {
 		
-		CommentlikeCount , _ := models.CommentLikeCounter(string(comment.ID))
-		CommentDislikeCount , _ := models.CommentDisLikeCounter(string(comment.ID))
+		CommentlikeCount , _ := models.CommentLikeCounter(strconv.Itoa(comment.ID))
+		CommentDislikeCount , _ := models.CommentDisLikeCounter(strconv.Itoa(comment.ID))
+		
 		commentDetail := map[string]interface{}{
+			"PostID" :		id,
 			"id":			 comment.ID,
 			"Author":        comment.Author,
 			"comment":       comment.Content,
@@ -530,6 +533,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	userID, _ := GetUserIDFromSession(r)
 	commentID := r.URL.Query().Get("Comment_id")
 	like := r.URL.Query().Get("like") // "1" for like, "0" for dislike
+	postID := r.URL.Query().Get("post_id")
 
 	// Logic to update the like/dislike in the database
 	if commentID == "" || (like != "1" && like != "-1") {
@@ -558,6 +562,8 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 			models.CommentAddLike(commentID, userID, "-1")
 		}
 	}
+
+	http.Redirect(w, r, "/Post?id="+postID, http.StatusSeeOther)
 
 
 }
