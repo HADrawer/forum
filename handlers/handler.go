@@ -124,11 +124,12 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err1 := templates.ExecuteTemplate(w, "base.html", pageData)
 	if err1 != nil {
-		// log.Print(err)
-		// http.Error(w, "Internal server error ", http.StatusInternalServerError)
-		RenderTemplate(w, "404", nil)  
+		err404 := templates.ExecuteTemplate(w, "404.html", nil)
+		if err404 != nil {
+			http.Error(w, "404 page not found", http.StatusNotFound)
+		}
+			return
 	}
-
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
