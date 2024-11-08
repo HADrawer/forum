@@ -3,11 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internal Server Error</title>
+    <title>Page Not Found</title>
+    <style>
+        * {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+        body {
+    padding: 0;
+    margin: 0;
+}
+    #notfound {
+    position: relative;
+    height: 100vh;
+}
+    div {
+    display: block;
+    unicode-bidi: isolate;
+}
+    .notfound .notfound-404 h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 168px;
+    margin: 0px;
+    color: #ff508e;
+    text-transform: uppercase;
+    }
+    </style>
 </head>
 <body>
-    <h1>500 - Internal Server Error</h1>
-    <p>Something went wrong on our end. Please try again later.</p>
+  <div class="notfound">
+    <div class="notfound-404">
+    <h1>500</h1>
+    </div>
+    <h2>Something went wrong on our end. Please try again later</h2>
     <a href="/">Go back to the homepage</a>
+   </div>
 </body>
 </html>

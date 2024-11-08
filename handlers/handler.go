@@ -19,19 +19,28 @@ var templates = template.Must(template.ParseGlob("templates/*.html"))
 
 // renderTemplate helper function
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
-	
 	tmplPath := filepath.Join("templates", tmpl+".html")
 
-    // Check if the template file exists
-    if _, err := os.Stat(tmplPath); os.IsNotExist(err) {
-        http.NotFound(w, nil) // Return a 404 if the file is missing
-        return
-    }
+	// Check if the template file exists
+	if _, err := os.Stat(tmplPath); os.IsNotExist(err) {
+		// Render the 404 error page if the requested template file is missing
+		err404 := templates.ExecuteTemplate(w, "404.html", nil)
+		if err404 != nil {
+			http.Error(w, "404 page not found", http.StatusNotFound)
+		}
+		return
+	}
 
+	// Attempt to execute the template
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		log.Print(err)
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError)
+
+		// Render the 500 error page if there's an internal server error
+		err500 := templates.ExecuteTemplate(w, "500.html", nil)
+		if err500 != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -69,7 +78,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := models.GetAllPosts()
 	if err != nil {
-		http.Error(w, "Unable to load posts", http.StatusInternalServerError) // 500
+		http.Error(w, "Unable to load posts", http.StatusInternalServerError)
+		RenderTemplate(w, "500", nil)   // 500
 		return
 	}
 	isExist := true
@@ -114,8 +124,9 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err1 := templates.ExecuteTemplate(w, "base.html", pageData)
 	if err1 != nil {
-		log.Print(err)
-		http.Error(w, "Internal server error ", http.StatusInternalServerError)
+		// log.Print(err)
+		// http.Error(w, "Internal server error ", http.StatusInternalServerError)
+		RenderTemplate(w, "404", nil)  
 	}
 
 }
@@ -606,6 +617,7 @@ func CommentHandler(w http.ResponseWriter, r *http.Request) {
 	err := models.CreateComment(userID, postId, comment)
 	if err != nil {
 		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
+		RenderTemplate(w, "500", nil)  
 		return
 	}
 
