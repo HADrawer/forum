@@ -36,6 +36,8 @@ a:hover {
 }
 
 .navbar {
+  background-color: rgba(250, 93, 158, 0.384);
+  backdrop-filter: blur(5px);
     position: fixed;
     left: 0;
     top: 0;
@@ -102,7 +104,9 @@ a:hover {
     width: 90%; /* Responsive width */
     max-width: 100%; /* Maximum width for larger screens */
     overflow-wrap: break-word;
-    word-break: break-word;                            
+    word-break: break-word;
+    overflow-y: auto;
+    margin-top: 120px;                          
     
 }
 .info h3{

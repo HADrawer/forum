@@ -29,6 +29,8 @@ a:hover {
 }
 
 .navbar {
+    background-color: rgba(250, 93, 158, 0.384);
+    backdrop-filter: blur(5px);
     position: fixed;
     left: 0;
     top: 0;
