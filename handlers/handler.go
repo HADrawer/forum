@@ -383,7 +383,11 @@ func LikedPostsHandler(w http.ResponseWriter, r *http.Request) {
 	pageData["Posts"] = postDetails
 	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
 	if err1 != nil {
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
+		err404 := templates.ExecuteTemplate(w, "404.html", nil)
+		if err404 != nil {
+			http.Error(w, "404 page not found", http.StatusNotFound)
+		}
+		return
 	}
 }
 
@@ -447,7 +451,11 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Render the view post template
 	err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
 	if err1 != nil {
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
+		err404 := templates.ExecuteTemplate(w, "404.html", nil)
+		if err404 != nil {
+			http.Error(w, "404 page not found", http.StatusNotFound)
+		}
+		return
 	}
 }
 func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
