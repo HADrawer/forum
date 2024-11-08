@@ -101,10 +101,17 @@ a:hover {
     color: #312f2f;
     width: 90%; /* Responsive width */
     max-width: 900px; /* Maximum width for larger screens */
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     
 }
 .info h3{
   font-size: 30px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .info h5{
   font-size: 10px;

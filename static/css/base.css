@@ -125,6 +125,8 @@ a:hover {
     flex-wrap: wrap;
     gap: 20px;
     justify-content: flex-start;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .content {
@@ -137,6 +139,8 @@ a:hover {
     color: #312f2f;
     padding: 20px;
     box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .info h1 {
