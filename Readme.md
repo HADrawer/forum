@@ -59,8 +59,10 @@ Our forum leverages **SQLite** as the database to handle and store user data, po
 
 Ensure Docker is installed on your system, then use the Dockerfile to build and run the project:
 
-
+### step1:
 docker build -t forum-app .
+
+### step2:
 docker run -p 8080:8080 forum-app
 
 ## Database Structure

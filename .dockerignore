@@ -1,0 +1,13 @@
+# Ignore the Go local build directory
+/build
+
+# Ignore local Go modules
+/pkg
+
+# Ignore VCS files
+.git
+.gitignore
+
+# Ignore Docker-related files
+Dockerfile
+.dockerignore
