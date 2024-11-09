@@ -11,12 +11,18 @@
             var content = document.getElementById("content").value.trim(); // Trim leading/trailing spaces
             var titleError = document.getElementById("titleError");
             var contentError = document.getElementById("contentError");
+            var categoryError = document.getElementById("categoryError");
+            
+            // Reset error messages
+            titleError.style.display = "none";
+            contentError.style.display = "none";
+            categoryError.style.display = "none";
 
             // Check if title is empty after trimming
             if (title === "") {
                 titleError.style.display = "block";
                 titleError.innerText = "Title cannot be empty or just spaces.";
-                return false; 
+                return false;
             }
 
             // Check if title contains at least one letter
@@ -40,10 +46,18 @@
                 return false;
             }
 
-            // If validation is successful, hide the error messages and allow form submission
-            titleError.style.display = "none";
-            contentError.style.display = "none";
-            return true; 
+            // Check if at least one category is selected
+            var categories = document.querySelectorAll("input[name='categories[]']");
+            var isCategorySelected = Array.from(categories).some(checkbox => checkbox.checked);
+            
+            if (!isCategorySelected) {
+                categoryError.style.display = "block";
+                categoryError.innerText = "Please select at least one category.";
+                return false;
+            }
+
+            // All validations passed, allow form submission
+            return true;
         }
     </script>
 </head>
@@ -77,8 +91,10 @@
                     {{range .Catagories}}
                     <label class="check"><input type="checkbox" name="categories[]" value="{{.Catagory}}"><span>{{.Catagory}}</span></label>
                     {{end}}
+                    <div id="categoryError" style="color:red; display:none; margin-top: 8px;"></div>
                 </div>
-                <span  style="color:red; ">{{.InvalidPost}}.</span> <!-- Error message for category -->
+
+                <span style="color:red;">{{.InvalidPost}}.</span> <!-- Error message for category -->
                 <button class="btn" type="submit">Post</button>
             </form>
         </div>
