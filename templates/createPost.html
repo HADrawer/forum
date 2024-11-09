@@ -5,6 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/create_post.css">
+    <script>
+        function validateForm() {
+            var title = document.getElementById("title").value.trim(); // Trim leading/trailing spaces
+            var content = document.getElementById("content").value.trim(); // Trim leading/trailing spaces
+            var titleError = document.getElementById("titleError");
+            var contentError = document.getElementById("contentError");
+
+            // Check if title is empty after trimming
+            if (title === "") {
+                titleError.style.display = "block";
+                titleError.innerText = "Title cannot be empty or just spaces.";
+                return false; 
+            }
+
+            // Check if title contains at least one letter
+            if (!/[a-zA-Z]/.test(title)) {
+                titleError.style.display = "block";
+                titleError.innerText = "Title must contain at least one letter.";
+                return false;
+            }
+
+            // Check if content is empty after trimming
+            if (content === "") {
+                contentError.style.display = "block";
+                contentError.innerText = "Content cannot be empty or just spaces.";
+                return false;
+            }
+
+            // Check if content contains at least one letter
+            if (!/[a-zA-Z]/.test(content)) {
+                contentError.style.display = "block";
+                contentError.innerText = "Content must contain at least one letter.";
+                return false;
+            }
+
+            // If validation is successful, hide the error messages and allow form submission
+            titleError.style.display = "none";
+            contentError.style.display = "none";
+            return true; 
+        }
+    </script>
 </head>
 <body>
     <main>
@@ -16,16 +57,20 @@
             </ul>
             <h1 class="UserID">{{.UserID}}</h1>
         </nav>
+
         <div class="post-container">
             <h2>Create Post</h2>
-            <form action="/createPost" method="post">
+            <form action="/createPost" method="post" onsubmit="return validateForm()">
                 <div class="form-group">
                     <label class="title" for="title">Title</label>
                     <input placeholder="Enter a Title for Post" id="title" name="title" type="text" class="form_style" maxlength="100" required>
+                    <div id="titleError" style="color:red; display:none;"></div>
                 </div>
+
                 <div class="form-group">
                     <label class="content" for="content">Content</label>
                     <textarea placeholder="What do you think?" id="content" name="content" class="form_style" required></textarea>
+                    <div id="contentError" style="color:red; display:none;"></div>
                 </div>
 
                 <div class="categories">
@@ -38,66 +83,5 @@
             </form>
         </div>
     </main>
-    
 </body>
 </html>
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/static/css/create_post.css">
-    
-</head>
-<body>
-   <main>
-      <nav class="navbar">
-          <a href="/" class="logo"><i ></i> Fourm</a>
-        
-          <ul>
-            <li><a href="/"><i class="fa fa-home"></i>Home</a></li>
-            <li><a href="/logout"> <i class="fa fa-sign-out"></i>Logout</a></li>
-          </ul>
-          <h1 class="UserID">{{.UserID}}</h1>
-      </nav>
-    <div class="post-container">
-     <h2>Create Post</h2>
-       
-        <form action="/createPost"  method="post">
-            <div class="form-group">
-                <label class="title" for="title">Title</label>
-                <input placeholder="Enter a Title for Post" id="title" name="title"  type="text" class="form_style" required>
-            </div>
-            <div class="form-group">
-                <label  calss="content" for="content">Content</label>
-                <textarea placeholder="What do you think?" id="content" name="content"  class="form_style" required></textarea>
-            </div>
-
-            <div class="categories">
-                <label class="check"><input type="checkbox" name="categories[]" value="General"><span>General</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Technology"><span>Technology</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Science"><span>Science</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Sports"><span>Sports</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Gaming"><span>Gaming</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Music"><span>Music</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Books"><span>Books</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Movies"><span>Movies</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="TV"><span>TV</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Food"><span>Food</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Travel"><span>Travel</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Photography"><span>Photography</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Art"><span>Art</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Writing"><span>Writing</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Programming"><span>Programming</span></label>
-                <label class="check"><input type="checkbox" name="categories[]" value="Other"><span>Other</span></label>
-            </div>
-            <button class="btn" type="submit">Post</button>
-        </form>
-    </div>
-</main>
-    
-</body>
-</html> -->

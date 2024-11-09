@@ -21,17 +21,25 @@ var templates = template.Must(template.ParseGlob("templates/*.html"))
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 	tmplPath := filepath.Join("templates", tmpl+".html")
 
-	// Check if the template file exists
+	// Check if the requested template file exists
 	if _, err := os.Stat(tmplPath); os.IsNotExist(err) {
-		// Render the 404 error page if the requested template file is missing
+		// Template not found, check if the 404 page exists
+		if _, err404 := os.Stat(filepath.Join("templates", "404.html")); os.IsNotExist(err404) {
+			// 404.html is missing, directly return 404 error
+			http.Error(w, "404 page not found", http.StatusNotFound)
+			return
+		}
+
+		// Render the 404 error page if the requested template is missing and 404 page exists
 		err404 := templates.ExecuteTemplate(w, "404.html", nil)
 		if err404 != nil {
+			// If rendering 404 template fails, fallback to default 404 message
 			http.Error(w, "404 page not found", http.StatusNotFound)
 		}
 		return
 	}
 
-	// Attempt to execute the template
+	// Attempt to execute the requested template
 	err := templates.ExecuteTemplate(w, tmpl+".html", data)
 	if err != nil {
 		log.Print(err)
@@ -39,10 +47,12 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 		// Render the 500 error page if there's an internal server error
 		err500 := templates.ExecuteTemplate(w, "500.html", nil)
 		if err500 != nil {
+			// If rendering 500 template fails, fallback to default 500 message
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 	}
 }
+
 
 // BaseHandler serves pages with the base layout (base.html)
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +61,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		RenderTemplate(w, "404", nil)      // Render custom 404 page
 		return
 	}
+	if r.Method == http.MethodGet {
+		
+	
+	
 	userID, isLoggedIn := GetUserIDFromSession(r)
 	// templateName = "base"
 	pageData := make(map[string]interface{})
@@ -122,14 +136,9 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		templates.Execute(w, nil)
 		return
 	}
-	err1 := templates.ExecuteTemplate(w, "base.html", pageData)
-	if err1 != nil {
-		err404 := templates.ExecuteTemplate(w, "404.html", nil)
-		if err404 != nil {
-			http.Error(w, "404 page not found", http.StatusNotFound)
-		}
-			return
-	}
+	RenderTemplate(w, "base", pageData)
+	// ExecuteTemplate
+}
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -337,10 +346,8 @@ func CreatedPostsHandler(w http.ResponseWriter, r *http.Request) {
 		pageData["NoPosts"] = "No created posts found."
 	}
 	pageData["Posts"] = postDetails
-	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
-	if err1 != nil {
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
-	}
+	RenderTemplate(w, "ListsViewer", pageData)
+	
 }
 
 func LikedPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -382,14 +389,8 @@ func LikedPostsHandler(w http.ResponseWriter, r *http.Request) {
 		pageData["NoPosts"] = "No Liked posts found."
 	}
 	pageData["Posts"] = postDetails
-	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
-	if err1 != nil {
-		err404 := templates.ExecuteTemplate(w, "404.html", nil)
-		if err404 != nil {
-			http.Error(w, "404 page not found", http.StatusNotFound)
-		}
-		return
-	}
+	RenderTemplate(w, "ListsViewer", pageData)
+	
 }
 
 func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -450,14 +451,8 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 	pageData["DisLikes"] = DislikeCount
 
 	// Render the view post template
-	err1 := templates.ExecuteTemplate(w, "viewPost.html", pageData)
-	if err1 != nil {
-		err404 := templates.ExecuteTemplate(w, "404.html", nil)
-		if err404 != nil {
-			http.Error(w, "404 page not found", http.StatusNotFound)
-		}
-		return
-	}
+	RenderTemplate(w, "viewPost", pageData)
+	
 }
 func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	_, isLoggedIn := GetUserIDFromSession(r)
@@ -509,10 +504,8 @@ func CatagoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Render the category view template
-	err1 := templates.ExecuteTemplate(w, "ListsViewer.html", pageData)
-	if err1 != nil {
-		http.Error(w, "Internal server error 500", http.StatusInternalServerError) // 500
-	}
+	RenderTemplate(w, "ListsViewer", pageData)
+	
 }
 
 //-----------------------------------------------------------------------

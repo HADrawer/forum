@@ -11,9 +11,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
     handlers.RenderTemplate(w, "register", nil)
 }
 
+// --- Main Function ---
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNotFound)
-    handlers.RenderTemplate(w, "404", nil) // Assume "404.html" exists in templates
+    handlers.RenderTemplate(w, "404", nil)
 }
 
 func main() {
@@ -36,20 +37,12 @@ func main() {
     http.HandleFunc("/CategoryViewer", handlers.CatagoryHandler)
     http.HandleFunc("/Comment", handlers.CommentHandler)
     http.HandleFunc("/Like", handlers.LikeHandler)
-    http.HandleFunc("/CommentLike", handlers.LikeCommentHandler)
 
-    // Add a fallback for unknown routes
-    http.HandleFunc("/404", NotFoundHandler)
 
-     // Serve static files
-     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
-     // Set NotFoundHandler as the default handler for unknown routes
-    //  http.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
-       
-     log.Println("Server is running on http://localhost:8080")
-     if err := http.ListenAndServe(":8080", nil); err != nil {
-         log.Fatal("Failed to start server: ", err)
-     }
-
+    // Serve static files
+    http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+    log.Println("Server is running on http://localhost:8080")
+    if err := http.ListenAndServe(":8080", nil); err != nil {
+        log.Fatal("Failed to start server: ", err)
     }
+}

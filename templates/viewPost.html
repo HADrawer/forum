@@ -6,6 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.CateName}} Posts</title>
     <link rel="stylesheet" href="/static/css/viewPost2.css">
+    <script>
+        function validateForm() {
+         
+            var Comment = document.getElementById("Comment").value.trim(); // Trim leading/trailing spaces
+           
+            var CommentError = document.getElementById("CommentError");
+
+           
+
+            if (Comment === "") {
+                CommentError.style.display = "block";
+                CommentError.innerText = "Comment cannot be empty or just spaces.";
+                return false;
+            }
+
+            if (!/[a-zA-Z]/.test(Comment)) {
+                CommentError.style.display = "block";
+                CommentError.innerText = "Comment must contain at least one letter.";
+                return false;
+            }
+
+            CommentError.style.display = "none";
+            return true; 
+        }
+    </script>
 </head>
 <body>
     <main>
@@ -59,9 +84,11 @@
                  
                     {{if .IsLoggedIn}}
                     <h2>Add a Comment</h2>
-                    <form action="/Comment" method="post">
+                    <form action="/Comment" method="post" onsubmit="return validateForm()">
                         <input name="PostID" value="{{.id}}" type="hidden">
-                        <textarea name="PostComment" placeholder="Write Your Comment here" maxlength="250" required></textarea><br>
+                        <textarea name="PostComment" id="Comment" placeholder="Write Your Comment here" maxlength="250" required></textarea><br>
+                        <div id="CommentError" style="color:red; display:none;"></div>
+
                         <input type="submit" class="button-primary" value="Add Comment">
                     </form>
                 {{else}}
