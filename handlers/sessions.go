@@ -9,14 +9,26 @@ import (
 )
 var sessions = map[string]string{} // key is the session ID, value is the user ID
 
+var userSessions = map[string]string{}
 
 
 func CreateSession(w http.ResponseWriter, userID string) {
     // Generate a new UUID for the session ID
     sessionID := uuid.NewString()
 
+    if existingSessionID, exists := userSessions[userID]; exists {
+        delete(sessions, existingSessionID)
+		http.SetCookie(w, &http.Cookie{
+			Name:     "session_id",
+			Value:    "",
+			Expires:  time.Now().Add(-1 * time.Hour), // Expire the old session cookie immediately
+			HttpOnly: true,
+		})
+    }
+    
     // Store the session ID and associated userID in the session store
     sessions[sessionID] = userID
+    userSessions[userID] = sessionID
 
     // Set a cookie with the session ID
     http.SetCookie(w, &http.Cookie{
@@ -49,9 +61,14 @@ func DestroySession(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    userID, exists := sessions[cookie.Value]
+	if !exists {
+		return
+	}
     // Delete session from the session store
     delete(sessions, cookie.Value)
 
+    delete(userSessions, userID)
     // Expire the cookie
     http.SetCookie(w, &http.Cookie{
         Name:     "session_id",
