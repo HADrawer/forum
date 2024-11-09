@@ -276,20 +276,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		// Check if title and content are provided
 		if title == "" || content == "" || len(categories) == 0 {
 
-			Catagories, _ := models.GetAllCategories()
-		pageData := make(map[string]interface{})
-		var postDetails []map[string]interface{}
-	for _, Catagory := range Catagories {
-		postDetail := map[string]interface{}{
-			"Catagory": Catagory.Name,
-		}
-		postDetails = append(postDetails, postDetail)
-	}
-		pageData["Catagories"] = postDetails
-		pageData["InvalidPost"]= "Please fill out this field"
-			
-			RenderTemplate(w, "createPost", pageData) // 400
-			return
+			http.Error(w, "Bad request: Missing PostID or Comment", http.StatusBadRequest) 
 
 		}
 
@@ -520,7 +507,7 @@ func LikeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Logic to update the like/dislike in the database
 	if postID == "" || (like != "1" && like != "-1") {
-		http.Error(w, "Invalid like or post ID", http.StatusBadRequest) // 400 Bad Request
+		http.Error(w, "Bad request: Missing PostID or Comment", http.StatusBadRequest) // 400 Bad Request
 		return
 	}
 
@@ -559,7 +546,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Logic to update the like/dislike in the database
 	if commentID == "" || (like != "1" && like != "-1") {
-		http.Error(w, "Invalid like or comment ID", http.StatusBadRequest) // 400 Bad Request
+		http.Error(w, "Bad request: Missing PostID or Comment", http.StatusBadRequest) // 400 Bad Request
 		return
 	}
 
