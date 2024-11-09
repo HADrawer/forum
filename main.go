@@ -37,6 +37,7 @@ func main() {
     http.HandleFunc("/CategoryViewer", handlers.CatagoryHandler)
     http.HandleFunc("/Comment", handlers.CommentHandler)
     http.HandleFunc("/Like", handlers.LikeHandler)
+    http.HandleFunc("/CommentLike", handlers.LikeCommentHandler)
 
 
     // Serve static files
