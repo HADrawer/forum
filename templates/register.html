@@ -8,16 +8,29 @@
     <script>
         function validateForm() {
             var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
             var errorMessage = document.getElementById("usernameError");
-
+            var errorMessage1 = document.getElementById("passwordError");
+        
+            // Username validation
             if (username.includes(" ")) {
                 errorMessage.style.display = "block";
                 errorMessage.innerText = "Username cannot contain spaces.";
                 return false; // Prevent form submission
             } else {
                 errorMessage.style.display = "none"; // Hide error message
-                return true; // Allow form submission
             }
+        
+            // Password validation (check if password is empty or contains only spaces)
+            if (password.trim() === "") {
+                errorMessage1.style.display = "block";
+                errorMessage1.innerText = "Password cannot contain only spaces.";
+                return false; // Prevent form submission
+            } else {
+                errorMessage1.style.display = "none"; // Hide error message
+            }
+        
+            return true; // Allow form submission if all conditions are met
         }
     </script>
 </head>
@@ -40,7 +53,7 @@
                 <div class="form_group">
                     <label class="sub_title" for="password">Password</label>
                     <input placeholder="Enter your password" id="password" name="password" class="form_style" type="password" minlength="8" required>
-                    <span style="color:red; ">{{.InvalidRegister}}</span>
+                    <span id="passwordError" style="color:red; display:none;"></span>
                 </div>
                 <div>
                     <button class="btn">SIGN UP</button>
