@@ -11,6 +11,9 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
     handlers.RenderTemplate(w, "register", nil)
 }
 
+
+
+
 // --- Main Function ---
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNotFound)
